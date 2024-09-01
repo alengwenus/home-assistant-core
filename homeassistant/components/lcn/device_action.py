@@ -64,17 +64,13 @@ async def async_call_action_from_config(
     context: Context | None,
 ) -> None:
     """Execute a device action."""
-    # print(config)
-    # print(variables)
-    # print(context)
+    service = config[CONF_TYPE]
+    service_data = {
+        key: value
+        for key, value in config.items()
+        if key not in (CONF_DOMAIN, CONF_TYPE)
+    }
 
-    # service_data = {ATTR_ENTITY_ID: config[CONF_ENTITY_ID]}
-
-    # if config[CONF_TYPE] == "turn_on":
-    #     service = SERVICE_TURN_ON
-    # elif config[CONF_TYPE] == "turn_off":
-    #     service = SERVICE_TURN_OFF
-
-    # await hass.services.async_call(
-    #     DOMAIN, service, service_data, blocking=True, context=context
-    # )
+    await hass.services.async_call(
+        DOMAIN, service, service_data, blocking=True, context=context
+    )

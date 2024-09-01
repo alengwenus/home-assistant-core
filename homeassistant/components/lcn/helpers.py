@@ -50,6 +50,7 @@ from .const import (
     CONF_SOFTWARE_SERIAL,
     CONNECTION,
     DEFAULT_NAME,
+    DEVICE_CONNECTIONS,
     DOMAIN,
     LED_PORTS,
     LOGICOP_PORTS,
@@ -364,7 +365,7 @@ def register_lcn_address_devices(
             device_model = f"{hardware_name} (m{address[0]:03d}{address[1]:03d})"
             sw_version = f"{device_config[CONF_SOFTWARE_SERIAL]:06X}"
 
-        device_registry.async_get_or_create(
+        device_entry = device_registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
             identifiers=identifiers,
             via_device=host_identifiers,
@@ -373,6 +374,10 @@ def register_lcn_address_devices(
             name=device_name,
             model=device_model,
         )
+
+        hass.data[DOMAIN][config_entry.entry_id][DEVICE_CONNECTIONS][
+            device_entry.id
+        ] = get_device_connection(hass, address, config_entry)
 
 
 async def async_update_device_config(
