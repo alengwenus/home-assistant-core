@@ -7,11 +7,15 @@
       "codelock": "Code lock code received",
       "send_keys": "Send keys received"
     },
+    "action_type": {
+      "pck": "Send PCK command"
+    },
     "extra_fields": {
       "action": "Action",
       "code": "Code",
       "key": "Key",
-      "level": "Level"
+      "level": "Level",
+      "pck": "PCK command"
     }
   },
   "config": {
