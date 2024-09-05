@@ -1,6 +1,7 @@
 """Service calls related dependencies for LCN component."""
 
 from enum import StrEnum, auto
+from typing import Any
 
 import pypck
 import voluptuous as vol
@@ -43,13 +44,16 @@ from .const import (
     VAR_UNITS,
     VARIABLES,
 )
-from .helpers import DeviceConnectionType, is_states_string
+from .helpers import DeviceConnectionType
 
 
 class LcnServiceCall:
     """Parent class for all LCN service calls."""
 
-    schema = vol.Schema({vol.Required(CONF_DEVICE_ID): cv.string})
+    extra_fields: dict[vol.Required | vol.Optional, Any] = {
+        vol.Required(CONF_DEVICE_ID): cv.string
+    }
+    schema = vol.Schema(extra_fields)
 
     def __init__(self, hass: HomeAssistant) -> None:
         """Initialize service call."""
@@ -74,17 +78,17 @@ class LcnServiceCall:
 class OutputAbs(LcnServiceCall):
     """Set absolute brightness of output port in percent."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
-            vol.Required(CONF_BRIGHTNESS): vol.All(
-                vol.Coerce(int), vol.Range(min=0, max=100)
-            ),
-            vol.Optional(CONF_TRANSITION, default=0): vol.All(
-                vol.Coerce(float), vol.Range(min=0.0, max=486.0)
-            ),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
+        vol.Required(CONF_BRIGHTNESS): vol.All(
+            vol.Coerce(int), vol.Range(min=0, max=100)
+        ),
+        vol.Optional(CONF_TRANSITION, default=0): vol.All(
+            vol.Coerce(float), vol.Range(min=0.0, max=486.0)
+        ),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -101,14 +105,14 @@ class OutputAbs(LcnServiceCall):
 class OutputRel(LcnServiceCall):
     """Set relative brightness of output port in percent."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
-            vol.Required(CONF_BRIGHTNESS): vol.All(
-                vol.Coerce(int), vol.Range(min=-100, max=100)
-            ),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
+        vol.Required(CONF_BRIGHTNESS): vol.All(
+            vol.Coerce(int), vol.Range(min=-100, max=100)
+        ),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -122,14 +126,14 @@ class OutputRel(LcnServiceCall):
 class OutputToggle(LcnServiceCall):
     """Toggle output port."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
-            vol.Optional(CONF_TRANSITION, default=0): vol.All(
-                vol.Coerce(float), vol.Range(min=0.0, max=486.0)
-            ),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
+        vol.Optional(CONF_TRANSITION, default=0): vol.All(
+            vol.Coerce(float), vol.Range(min=0.0, max=486.0)
+        ),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -145,7 +149,12 @@ class OutputToggle(LcnServiceCall):
 class Relays(LcnServiceCall):
     """Set the relays status."""
 
-    schema = LcnServiceCall.schema.extend({vol.Required(CONF_STATE): is_states_string})
+    extra_fields = {
+        vol.Required(CONF_STATE): vol.All(
+            vol.Upper, vol.In([mod.name for mod in pypck.lcn_defs.RelayStateModifier])
+        )
+    }
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -161,12 +170,12 @@ class Relays(LcnServiceCall):
 class Led(LcnServiceCall):
     """Set the led state."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_LED): vol.All(vol.Upper, vol.In(LED_PORTS)),
-            vol.Required(CONF_STATE): vol.All(vol.Upper, vol.In(LED_STATUS)),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_LED): vol.All(vol.Upper, vol.In(LED_PORTS)),
+        vol.Required(CONF_STATE): vol.All(vol.Upper, vol.In(LED_STATUS)),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -184,17 +193,15 @@ class VarAbs(LcnServiceCall):
     Regulator setpoints can also be set using R1VARSETPOINT, R2VARSETPOINT.
     """
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_VARIABLE): vol.All(
-                vol.Upper, vol.In(VARIABLES + SETPOINTS)
-            ),
-            vol.Optional(CONF_VALUE, default=0): vol.Coerce(float),
-            vol.Optional(CONF_UNIT_OF_MEASUREMENT, default="native"): vol.All(
-                vol.Upper, vol.In(VAR_UNITS)
-            ),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_VARIABLE): vol.All(vol.Upper, vol.In(VARIABLES + SETPOINTS)),
+        vol.Optional(CONF_VALUE, default=0): vol.Coerce(float),
+        vol.Optional(CONF_UNIT_OF_MEASUREMENT, default="native"): vol.All(
+            vol.Upper, vol.In(VAR_UNITS)
+        ),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -209,9 +216,10 @@ class VarAbs(LcnServiceCall):
 class VarReset(LcnServiceCall):
     """Reset value of variable or setpoint."""
 
-    schema = LcnServiceCall.schema.extend(
-        {vol.Required(CONF_VARIABLE): vol.All(vol.Upper, vol.In(VARIABLES + SETPOINTS))}
-    )
+    extra_fields = {
+        vol.Required(CONF_VARIABLE): vol.All(vol.Upper, vol.In(VARIABLES + SETPOINTS))
+    }
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -224,20 +232,20 @@ class VarReset(LcnServiceCall):
 class VarRel(LcnServiceCall):
     """Shift value of a variable, setpoint or threshold."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_VARIABLE): vol.All(
-                vol.Upper, vol.In(VARIABLES + SETPOINTS + THRESHOLDS)
-            ),
-            vol.Optional(CONF_VALUE, default=0): vol.Coerce(float),
-            vol.Optional(CONF_UNIT_OF_MEASUREMENT, default="native"): vol.All(
-                vol.Upper, vol.In(VAR_UNITS)
-            ),
-            vol.Optional(CONF_RELVARREF, default="current"): vol.All(
-                vol.Upper, vol.In(RELVARREF)
-            ),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_VARIABLE): vol.All(
+            vol.Upper, vol.In(VARIABLES + SETPOINTS + THRESHOLDS)
+        ),
+        vol.Optional(CONF_VALUE, default=0): vol.Coerce(float),
+        vol.Optional(CONF_UNIT_OF_MEASUREMENT, default="native"): vol.All(
+            vol.Upper, vol.In(VAR_UNITS)
+        ),
+        vol.Optional(CONF_RELVARREF, default="current"): vol.All(
+            vol.Upper, vol.In(RELVARREF)
+        ),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -253,12 +261,12 @@ class VarRel(LcnServiceCall):
 class LockRegulator(LcnServiceCall):
     """Locks a regulator setpoint."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_SETPOINT): vol.All(vol.Upper, vol.In(SETPOINTS)),
-            vol.Optional(CONF_STATE, default=False): bool,
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_SETPOINT): vol.All(vol.Upper, vol.In(SETPOINTS)),
+        vol.Optional(CONF_STATE, default=False): bool,
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -273,20 +281,20 @@ class LockRegulator(LcnServiceCall):
 class SendKeys(LcnServiceCall):
     """Sends keys (which executes bound commands)."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_KEYS): vol.All(
-                vol.Upper, cv.matches_regex(r"^([A-D][1-8])+$")
-            ),
-            vol.Optional(CONF_STATE, default="hit"): vol.All(
-                vol.Upper, vol.In(SENDKEYCOMMANDS)
-            ),
-            vol.Optional(CONF_TIME, default=0): cv.positive_int,
-            vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(
-                vol.Upper, vol.In(TIME_UNITS)
-            ),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_KEYS): vol.All(
+            vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
+        ),
+        vol.Optional(CONF_STATE, default="hit"): vol.All(
+            vol.Upper, vol.In(SENDKEYCOMMANDS)
+        ),
+        vol.Optional(CONF_TIME, default=0): cv.positive_int,
+        vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(
+            vol.Upper, vol.In(TIME_UNITS)
+        ),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -319,18 +327,20 @@ class SendKeys(LcnServiceCall):
 class LockKeys(LcnServiceCall):
     """Lock keys."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Optional(CONF_TABLE, default="a"): vol.All(
-                vol.Upper, cv.matches_regex(r"^[A-D]$")
-            ),
-            vol.Required(CONF_STATE): is_states_string,
-            vol.Optional(CONF_TIME, default=0): cv.positive_int,
-            vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(
-                vol.Upper, vol.In(TIME_UNITS)
-            ),
-        }
-    )
+    extra_fields = {
+        vol.Optional(CONF_TABLE, default="a"): vol.All(
+            vol.Upper, vol.In(["a", "b", "c", "d"])
+        ),
+        vol.Required(CONF_STATE): vol.In(
+            [mod.name for mod in pypck.lcn_defs.KeyLockStateModifier]
+        ),
+        vol.Optional(CONF_TIME, default=0): cv.positive_int,
+        vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(
+            vol.Upper, vol.In(TIME_UNITS)
+        ),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -361,12 +371,12 @@ class LockKeys(LcnServiceCall):
 class DynText(LcnServiceCall):
     """Send dynamic text to LCN-GTxD displays."""
 
-    schema = LcnServiceCall.schema.extend(
-        {
-            vol.Required(CONF_ROW): vol.All(int, vol.Range(min=1, max=4)),
-            vol.Required(CONF_TEXT): vol.All(str, vol.Length(max=60)),
-        }
-    )
+    extra_fields = {
+        vol.Required(CONF_ROW): vol.All(int, vol.Range(min=1, max=4)),
+        vol.Required(CONF_TEXT): vol.All(str, vol.Length(max=60)),
+    }
+
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
@@ -380,7 +390,8 @@ class DynText(LcnServiceCall):
 class Pck(LcnServiceCall):
     """Send arbitrary PCK command."""
 
-    schema = LcnServiceCall.schema.extend({vol.Required(CONF_PCK): str})
+    extra_fields = {vol.Required(CONF_PCK): cv.string}
+    schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
