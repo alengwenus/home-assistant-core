@@ -23,7 +23,7 @@ from homeassistant.components.lcn.const import (
     CONF_VARIABLE,
 )
 from homeassistant.components.lcn.services import LcnService
-from homeassistant.const import CONF_DEVICE_ID, CONF_STATE, CONF_UNIT_OF_MEASUREMENT
+from homeassistant.const import CONF_DEVICE_ID, CONF_UNIT_OF_MEASUREMENT
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 
@@ -154,8 +154,8 @@ async def test_service_lock_regulator(
 
 
 @patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_send_keys(hass: HomeAssistant, entry: MockConfigEntry) -> None:
-    """Test send_keys service."""
+async def test_service_send_key(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    """Test send_key service."""
     await async_setup_component(hass, "persistent_notification", {})
     await init_integration(hass, entry)
     device = get_device(hass, entry, (0, 7, False))
@@ -163,7 +163,7 @@ async def test_service_send_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
     with patch.object(MockModuleConnection, "send_keys") as send_keys:
         await hass.services.async_call(
             DOMAIN,
-            LcnService.SEND_KEYS,
+            LcnService.SEND_KEY,
             {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_KEY_STATE: "hit"},
             blocking=True,
         )
@@ -175,10 +175,10 @@ async def test_service_send_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
 
 
 @patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_send_keys_hit_deferred(
+async def test_service_send_key_hit_deferred(
     hass: HomeAssistant, entry: MockConfigEntry
 ) -> None:
-    """Test send_keys (hit_deferred) service."""
+    """Test send_key (hit_deferred) service."""
     await async_setup_component(hass, "persistent_notification", {})
     await init_integration(hass, entry)
     device = get_device(hass, entry, (0, 7, False))
@@ -192,7 +192,7 @@ async def test_service_send_keys_hit_deferred(
     ) as send_keys_hit_deferred:
         await hass.services.async_call(
             DOMAIN,
-            LcnService.SEND_KEYS,
+            LcnService.SEND_KEY,
             {
                 CONF_DEVICE_ID: device.id,
                 CONF_KEY: "c5",
@@ -215,11 +215,11 @@ async def test_service_send_keys_hit_deferred(
     ):
         await hass.services.async_call(
             DOMAIN,
-            LcnService.SEND_KEYS,
+            LcnService.SEND_KEY,
             {
                 CONF_DEVICE_ID: device.id,
                 CONF_KEY: "c5",
-                CONF_STATE: "make",
+                CONF_KEY_STATE: "make",
                 CONF_TIME: 5,
                 CONF_TIME_UNIT: "s",
             },
@@ -228,8 +228,8 @@ async def test_service_send_keys_hit_deferred(
 
 
 @patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_lock_keys(hass: HomeAssistant, entry: MockConfigEntry) -> None:
-    """Test lock_keys service."""
+async def test_service_lock_key(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    """Test lock_key service."""
     await async_setup_component(hass, "persistent_notification", {})
     await init_integration(hass, entry)
     device = get_device(hass, entry, (0, 7, False))
@@ -237,8 +237,8 @@ async def test_service_lock_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
     with patch.object(MockModuleConnection, "lock_keys") as lock_keys:
         await hass.services.async_call(
             DOMAIN,
-            LcnService.LOCK_KEYS,
-            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_KEY_STATE: "ON"},
+            LcnService.LOCK_KEY,
+            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_LOCK_STATE: "ON"},
             blocking=True,
         )
 
@@ -249,10 +249,10 @@ async def test_service_lock_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
 
 
 @patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_lock_keys_tab_a_temporary(
+async def test_service_lock_key_tab_a_temporary(
     hass: HomeAssistant, entry: MockConfigEntry
 ) -> None:
-    """Test lock_keys (tab_a_temporary) service."""
+    """Test lock_key (tab_a_temporary) service."""
     await async_setup_component(hass, "persistent_notification", {})
     await init_integration(hass, entry)
     device = get_device(hass, entry, (0, 7, False))
@@ -263,11 +263,11 @@ async def test_service_lock_keys_tab_a_temporary(
     ) as lock_keys_tab_a_temporary:
         await hass.services.async_call(
             DOMAIN,
-            LcnService.LOCK_KEYS,
+            LcnService.LOCK_KEY,
             {
                 CONF_DEVICE_ID: device.id,
                 CONF_KEY: "a5",
-                CONF_STATE: "ON",
+                CONF_LOCK_STATE: "ON",
                 CONF_TIME: 10,
                 CONF_TIME_UNIT: "s",
             },
@@ -290,11 +290,11 @@ async def test_service_lock_keys_tab_a_temporary(
     ):
         await hass.services.async_call(
             DOMAIN,
-            LcnService.LOCK_KEYS,
+            LcnService.LOCK_KEY,
             {
                 CONF_DEVICE_ID: device.id,
                 CONF_KEY: "c5",
-                CONF_STATE: "ON",
+                CONF_LOCK_STATE: "ON",
                 CONF_TIME: 10,
                 CONF_TIME_UNIT: "s",
             },

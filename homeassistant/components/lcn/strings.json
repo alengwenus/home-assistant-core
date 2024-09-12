@@ -13,8 +13,8 @@
       "var_reset": "Reset variable value",
       "lock_regulator": "Lock regulator",
       "led": "Set LED status",
-      "send_keys": "Send key",
-      "lock_keys": "Lock key",
+      "send_key": "Send key",
+      "lock_key": "Lock key",
       "dyn_text": "Send text",
       "pck": "Send PCK command"
     },
@@ -27,7 +27,7 @@
       "value_reference": "Value reference",
       "variable": "Variable",
       "setpoint": "Setpoint",
-      "lock_state": "set locked",
+      "lock_state": "Lock state",
       "led_state": "LED state",
       "key_state": "Key state",
       "led": "LED",
@@ -200,9 +200,9 @@
         }
       }
     },
-    "send_keys": {
-      "name": "Send keys",
-      "description": "Sends keys (which executes bound commands).",
+    "send_key": {
+      "name": "Send key",
+      "description": "Sends key (which executes bound commands).",
       "fields": {
         "device_id": {
           "name": "Device ID",
@@ -226,9 +226,9 @@
         }
       }
     },
-    "lock_keys": {
-      "name": "Lock keys",
-      "description": "Locks keys.",
+    "lock_key": {
+      "name": "Lock key",
+      "description": "Locks key.",
       "fields": {
         "device_id": {
           "name": "Device ID",
@@ -236,18 +236,18 @@
         },
         "key": {
           "name": "Key",
-          "description": "Keys to lock (must be table A for interval)."
+          "description": "Key to lock (must be table A for interval)."
         },
         "key_state": {
           "name": "Key state",
-          "description": "Key lock states as string (1=on, 2=off, T=toggle, -=nochange)."
+          "description": "Key lock state as string (on, off, toggle, nochange)."
         },
         "time": {
           "name": "Time",
           "description": "Lock interval."
         },
         "time_unit": {
-          "name": "[%key:component::lcn::services::send_keys::fields::time_unit::name%]",
+          "name": "[%key:component::lcn::services::send_key::fields::time_unit::name%]",
           "description": "Time unit of lock interval."
         }
       }

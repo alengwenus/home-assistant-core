@@ -259,7 +259,7 @@ lock_regulator:
       selector:
         boolean:
 
-send_keys:
+send_key:
   fields:
     device_id:
       required: true
@@ -306,7 +306,7 @@ send_keys:
             - "second"
             - "seconds"
 
-lock_keys:
+lock_key:
   fields:
     device_id:
       required: true

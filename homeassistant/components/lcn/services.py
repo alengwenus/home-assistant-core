@@ -180,8 +180,8 @@ class LockRegulator(LcnServiceCall):
         await device_connection.lock_regulator(reg_id, state)
 
 
-class SendKeys(LcnServiceCall):
-    """Sends keys (which executes bound commands)."""
+class SendKey(LcnServiceCall):
+    """Sends key (which executes bound commands)."""
 
     extra_fields = {
         vol.Required(CONF_KEY): vol.All(
@@ -226,14 +226,14 @@ class SendKeys(LcnServiceCall):
             await device_connection.send_keys(keys, state)
 
 
-class LockKeys(LcnServiceCall):
+class LockKey(LcnServiceCall):
     """Lock keys."""
 
     extra_fields = {
         vol.Required(CONF_KEY): vol.All(
             vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
         ),
-        vol.Required(CONF_KEY_STATE): vol.In(
+        vol.Required(CONF_LOCK_STATE): vol.In(
             [mod.name for mod in pypck.lcn_defs.KeyLockStateModifier]
         ),
         vol.Optional(CONF_TIME, default=0): cv.positive_int,
@@ -253,7 +253,7 @@ class LockKeys(LcnServiceCall):
 
         states = [pypck.lcn_defs.KeyLockStateModifier["NOCHANGE"]] * 8
         states[key_number] = pypck.lcn_defs.KeyLockStateModifier[
-            service.data[CONF_KEY_STATE]
+            service.data[CONF_LOCK_STATE]
         ]
 
         if (delay_time := service.data[CONF_TIME]) != 0:
@@ -316,8 +316,8 @@ class LcnService(StrEnum):
     VAR_REL = auto()
     LOCK_REGULATOR = auto()
     LED = auto()
-    SEND_KEYS = auto()
-    LOCK_KEYS = auto()
+    SEND_KEY = auto()
+    LOCK_KEY = auto()
     DYN_TEXT = auto()
     PCK = auto()
 
@@ -328,8 +328,8 @@ SERVICES = (
     (LcnService.VAR_REL, VarRel),
     (LcnService.LOCK_REGULATOR, LockRegulator),
     (LcnService.LED, Led),
-    (LcnService.SEND_KEYS, SendKeys),
-    (LcnService.LOCK_KEYS, LockKeys),
+    (LcnService.SEND_KEY, SendKey),
+    (LcnService.LOCK_KEY, LockKey),
     (LcnService.DYN_TEXT, DynText),
     (LcnService.PCK, Pck),
 )

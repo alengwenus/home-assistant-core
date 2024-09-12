@@ -27,10 +27,10 @@
     "lock_regulator": {
       "service": "mdi:lock"
     },
-    "send_keys": {
+    "send_key": {
       "service": "mdi:alarm-panel"
     },
-    "lock_keys": {
+    "lock_key": {
       "service": "mdi:lock"
     },
     "dyn_text": {
