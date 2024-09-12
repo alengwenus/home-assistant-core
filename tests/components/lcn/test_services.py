@@ -13,7 +13,6 @@ from homeassistant.components.lcn.const import (
     CONF_RELVARREF,
     CONF_ROW,
     CONF_SETPOINT,
-    CONF_TABLE,
     CONF_TEXT,
     CONF_TIME,
     CONF_TIME_UNIT,
@@ -236,14 +235,14 @@ async def test_service_lock_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
         await hass.services.async_call(
             DOMAIN,
             LcnService.LOCK_KEYS,
-            {CONF_DEVICE_ID: device.id, CONF_TABLE: "a", CONF_STATE: "0011TT--"},
+            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_STATE: "ON"},
             blocking=True,
         )
 
-    states = ["OFF", "OFF", "ON", "ON", "TOGGLE", "TOGGLE", "NOCHANGE", "NOCHANGE"]
-    lock_states = [pypck.lcn_defs.KeyLockStateModifier[state] for state in states]
+    lock_states = [pypck.lcn_defs.KeyLockStateModifier["NOCHANGE"]] * 8
+    lock_states[4] = pypck.lcn_defs.KeyLockStateModifier["ON"]
 
-    lock_keys.assert_awaited_with(0, lock_states)
+    lock_keys.assert_awaited_with(2, lock_states)
 
 
 @patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
@@ -264,15 +263,16 @@ async def test_service_lock_keys_tab_a_temporary(
             LcnService.LOCK_KEYS,
             {
                 CONF_DEVICE_ID: device.id,
-                CONF_STATE: "0011TT--",
+                CONF_KEY: "a5",
+                CONF_STATE: "ON",
                 CONF_TIME: 10,
                 CONF_TIME_UNIT: "s",
             },
             blocking=True,
         )
 
-    states = ["OFF", "OFF", "ON", "ON", "TOGGLE", "TOGGLE", "NOCHANGE", "NOCHANGE"]
-    lock_states = [pypck.lcn_defs.KeyLockStateModifier[state] for state in states]
+    lock_states = [pypck.lcn_defs.KeyLockStateModifier["NOCHANGE"]] * 8
+    lock_states[4] = pypck.lcn_defs.KeyLockStateModifier["ON"]
 
     lock_keys_tab_a_temporary.assert_awaited_with(
         10, pypck.lcn_defs.TimeUnit.parse("S"), lock_states
@@ -290,8 +290,8 @@ async def test_service_lock_keys_tab_a_temporary(
             LcnService.LOCK_KEYS,
             {
                 CONF_DEVICE_ID: device.id,
-                CONF_TABLE: "b",
-                CONF_STATE: "0011TT--",
+                CONF_KEY: "c5",
+                CONF_STATE: "ON",
                 CONF_TIME: 10,
                 CONF_TIME_UNIT: "s",
             },

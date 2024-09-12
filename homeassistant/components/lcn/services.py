@@ -18,7 +18,6 @@ from .const import (
     CONF_RELVARREF,
     CONF_ROW,
     CONF_SETPOINT,
-    CONF_TABLE,
     CONF_TEXT,
     CONF_TIME,
     CONF_TIME_UNIT,
@@ -228,8 +227,8 @@ class LockKeys(LcnServiceCall):
     """Lock keys."""
 
     extra_fields = {
-        vol.Optional(CONF_TABLE, default="a"): vol.All(
-            vol.Upper, vol.In(["a", "b", "c", "d"])
+        vol.Required(CONF_KEY): vol.All(
+            vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
         ),
         vol.Required(CONF_STATE): vol.In(
             [mod.name for mod in pypck.lcn_defs.KeyLockStateModifier]
@@ -246,11 +245,13 @@ class LockKeys(LcnServiceCall):
         """Execute service call."""
         device_connection = self.get_device_connection(service)
 
-        states = [
-            pypck.lcn_defs.KeyLockStateModifier[state]
-            for state in service.data[CONF_STATE]
+        table_id = ord(service.data[CONF_KEY][0]) - 65
+        key_number = int(service.data[CONF_KEY][1]) - 1
+
+        states = [pypck.lcn_defs.KeyLockStateModifier["NOCHANGE"]] * 8
+        states[key_number] = pypck.lcn_defs.KeyLockStateModifier[
+            service.data[CONF_STATE]
         ]
-        table_id = ord(service.data[CONF_TABLE]) - 65
 
         if (delay_time := service.data[CONF_TIME]) != 0:
             if table_id != 0:
