@@ -8,6 +8,14 @@
       "send_keys": "Send keys received"
     },
     "action_type": {
+      "var_abs": "Set absolute variable value",
+      "var_rel": "Set relative variable value",
+      "var_reset": "Reset variable value",
+      "lock_regulator": "Lock regulator",
+      "led": "Set LED status",
+      "send_keys": "Send key",
+      "lock_keys": "Lock key",
+      "dyn_text": "Send text",
       "pck": "Send PCK command"
     },
     "extra_fields": {
@@ -15,6 +23,19 @@
       "code": "Code",
       "key": "Key",
       "level": "Level",
+      "value": "Value",
+      "value_reference": "Value reference",
+      "variable": "Variable",
+      "setpoint": "Setpoint",
+      "lock_state": "set locked",
+      "led_state": "LED state",
+      "key_state": "Key state",
+      "led": "LED",
+      "time": "Time",
+      "time_unit": "Time unit",
+      "unit_of_measurement": "Unit of measurement",
+      "text": "Text",
+      "row": "Row",
       "pck": "PCK command"
     }
   },
@@ -81,91 +102,19 @@
     }
   },
   "services": {
-    "output_abs": {
-      "name": "Output absolute brightness",
-      "description": "Sets absolute brightness of output port in percent.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "Module address."
-        },
-        "output": {
-          "name": "Output",
-          "description": "Output port."
-        },
-        "brightness": {
-          "name": "Brightness",
-          "description": "Absolute brightness."
-        },
-        "transition": {
-          "name": "Transition",
-          "description": "Transition time."
-        }
-      }
-    },
-    "output_rel": {
-      "name": "Output relative brightness",
-      "description": "Sets relative brightness of output port in percent.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
-        },
-        "output": {
-          "name": "[%key:component::lcn::services::output_abs::fields::output::name%]",
-          "description": "[%key:component::lcn::services::output_abs::fields::output::description%]"
-        },
-        "brightness": {
-          "name": "Brightness",
-          "description": "Relative brightness."
-        }
-      }
-    },
-    "output_toggle": {
-      "name": "Toggle output",
-      "description": "Toggles output port.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
-        },
-        "output": {
-          "name": "[%key:component::lcn::services::output_abs::fields::output::name%]",
-          "description": "[%key:component::lcn::services::output_abs::fields::output::description%]"
-        },
-        "transition": {
-          "name": "Transition",
-          "description": "[%key:component::lcn::services::output_abs::fields::transition::description%]"
-        }
-      }
-    },
-    "relays": {
-      "name": "Relays",
-      "description": "Sets the relays status.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
-        },
-        "state": {
-          "name": "State",
-          "description": "Relays states as string (1=on, 2=off, t=toggle, -=no change)."
-        }
-      }
-    },
     "led": {
       "name": "LED",
       "description": "Sets the led state.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "Home Assistant device ID"
         },
         "led": {
           "name": "[%key:component::lcn::services::led::name%]",
           "description": "Led."
         },
-        "state": {
+        "led_state": {
           "name": "State",
           "description": "Led state."
         }
@@ -175,9 +124,9 @@
       "name": "Set absolute variable",
       "description": "Sets absolute value of a variable or setpoint.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
         "variable": {
           "name": "Variable",
@@ -197,9 +146,9 @@
       "name": "Reset variable",
       "description": "Resets value of variable or setpoint.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
         "variable": {
           "name": "[%key:component::lcn::services::var_abs::fields::variable::name%]",
@@ -211,9 +160,9 @@
       "name": "Shift variable",
       "description": "Shift value of a variable, setpoint or threshold.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
         "variable": {
           "name": "[%key:component::lcn::services::var_abs::fields::variable::name%]",
@@ -237,17 +186,17 @@
       "name": "Lock regulator",
       "description": "Locks a regulator setpoint.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
         "setpoint": {
           "name": "Setpoint",
           "description": "Setpoint name."
         },
-        "state": {
-          "name": "State",
-          "description": "New setpoint state."
+        "lock_state": {
+          "name": "Lock state",
+          "description": "New setpoint lock state."
         }
       }
     },
@@ -255,16 +204,16 @@
       "name": "Send keys",
       "description": "Sends keys (which executes bound commands).",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
-        "keys": {
-          "name": "Keys",
-          "description": "Keys to send."
+        "key": {
+          "name": "Key",
+          "description": "Key to send."
         },
-        "state": {
-          "name": "State",
+        "key_state": {
+          "name": "Key state",
           "description": "Key state upon sending (must be hit for deferred)."
         },
         "time": {
@@ -281,16 +230,16 @@
       "name": "Lock keys",
       "description": "Locks keys.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
-        "table": {
-          "name": "Table",
-          "description": "Table with keys to lock (must be A for interval)."
+        "key": {
+          "name": "Key",
+          "description": "Keys to lock (must be table A for interval)."
         },
-        "state": {
-          "name": "State",
+        "key_state": {
+          "name": "Key state",
           "description": "Key lock states as string (1=on, 2=off, T=toggle, -=nochange)."
         },
         "time": {
@@ -307,9 +256,9 @@
       "name": "Dynamic text",
       "description": "Sends dynamic text to LCN-GTxD displays.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
         "row": {
           "name": "Row",
@@ -325,9 +274,9 @@
       "name": "PCK",
       "description": "Sends arbitrary PCK command.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "Device ID",
+          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
         },
         "pck": {
           "name": "[%key:component::lcn::services::pck::name%]",

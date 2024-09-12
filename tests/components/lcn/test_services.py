@@ -8,7 +8,10 @@ import pytest
 from homeassistant.components.lcn import DOMAIN
 from homeassistant.components.lcn.const import (
     CONF_KEY,
+    CONF_KEY_STATE,
     CONF_LED,
+    CONF_LED_STATE,
+    CONF_LOCK_STATE,
     CONF_PCK,
     CONF_RELVARREF,
     CONF_ROW,
@@ -44,7 +47,7 @@ async def test_service_led(hass: HomeAssistant, entry: MockConfigEntry) -> None:
         await hass.services.async_call(
             DOMAIN,
             LcnService.LED,
-            {CONF_DEVICE_ID: device.id, CONF_LED: "led6", CONF_STATE: "blink"},
+            {CONF_DEVICE_ID: device.id, CONF_LED: "led6", CONF_LED_STATE: "blink"},
             blocking=True,
         )
 
@@ -142,7 +145,7 @@ async def test_service_lock_regulator(
             {
                 CONF_DEVICE_ID: device.id,
                 CONF_SETPOINT: "r1varsetpoint",
-                CONF_STATE: True,
+                CONF_LOCK_STATE: True,
             },
             blocking=True,
         )
@@ -161,7 +164,7 @@ async def test_service_send_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
         await hass.services.async_call(
             DOMAIN,
             LcnService.SEND_KEYS,
-            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_STATE: "hit"},
+            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_KEY_STATE: "hit"},
             blocking=True,
         )
 
@@ -235,7 +238,7 @@ async def test_service_lock_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
         await hass.services.async_call(
             DOMAIN,
             LcnService.LOCK_KEYS,
-            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_STATE: "ON"},
+            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_KEY_STATE: "ON"},
             blocking=True,
         )
 

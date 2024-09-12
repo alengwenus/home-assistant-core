@@ -6,14 +6,17 @@ from typing import Any
 import pypck
 import voluptuous as vol
 
-from homeassistant.const import CONF_DEVICE_ID, CONF_STATE, CONF_UNIT_OF_MEASUREMENT
+from homeassistant.const import CONF_DEVICE_ID, CONF_UNIT_OF_MEASUREMENT
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
     CONF_KEY,
+    CONF_KEY_STATE,
     CONF_LED,
+    CONF_LED_STATE,
+    CONF_LOCK_STATE,
     CONF_PCK,
     CONF_RELVARREF,
     CONF_ROW,
@@ -71,7 +74,7 @@ class Led(LcnServiceCall):
 
     extra_fields = {
         vol.Required(CONF_LED): vol.All(vol.Upper, vol.In(LED_PORTS)),
-        vol.Required(CONF_STATE): vol.All(vol.Upper, vol.In(LED_STATUS)),
+        vol.Required(CONF_LED_STATE): vol.All(vol.Upper, vol.In(LED_STATUS)),
     }
 
     schema = LcnServiceCall.schema.extend(extra_fields)
@@ -79,7 +82,7 @@ class Led(LcnServiceCall):
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
         led = pypck.lcn_defs.LedPort[service.data[CONF_LED]]
-        led_state = pypck.lcn_defs.LedStatus[service.data[CONF_STATE]]
+        led_state = pypck.lcn_defs.LedStatus[service.data[CONF_LED_STATE]]
 
         device_connection = self.get_device_connection(service)
         await device_connection.control_led(led, led_state)
@@ -162,7 +165,7 @@ class LockRegulator(LcnServiceCall):
 
     extra_fields = {
         vol.Required(CONF_SETPOINT): vol.All(vol.Upper, vol.In(SETPOINTS)),
-        vol.Optional(CONF_STATE, default=False): bool,
+        vol.Optional(CONF_LOCK_STATE, default=False): bool,
     }
 
     schema = LcnServiceCall.schema.extend(extra_fields)
@@ -170,7 +173,7 @@ class LockRegulator(LcnServiceCall):
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
         setpoint = pypck.lcn_defs.Var[service.data[CONF_SETPOINT]]
-        state = service.data[CONF_STATE]
+        state = service.data[CONF_LOCK_STATE]
 
         reg_id = pypck.lcn_defs.Var.to_set_point_id(setpoint)
         device_connection = self.get_device_connection(service)
@@ -184,7 +187,7 @@ class SendKeys(LcnServiceCall):
         vol.Required(CONF_KEY): vol.All(
             vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
         ),
-        vol.Optional(CONF_STATE, default="hit"): vol.All(
+        vol.Optional(CONF_KEY_STATE, default="hit"): vol.All(
             vol.Upper, vol.In(SENDKEYCOMMANDS)
         ),
         vol.Optional(CONF_TIME, default=0): cv.positive_int,
@@ -212,14 +215,14 @@ class SendKeys(LcnServiceCall):
 
         if (delay_time := service.data[CONF_TIME]) != 0:
             hit = pypck.lcn_defs.SendKeyCommand.HIT
-            if pypck.lcn_defs.SendKeyCommand[service.data[CONF_STATE]] != hit:
+            if pypck.lcn_defs.SendKeyCommand[service.data[CONF_KEY_STATE]] != hit:
                 raise ValueError(
                     "Only hit command is allowed when sending deferred keys."
                 )
             delay_unit = pypck.lcn_defs.TimeUnit.parse(service.data[CONF_TIME_UNIT])
             await device_connection.send_keys_hit_deferred(keys, delay_time, delay_unit)
         else:
-            state = pypck.lcn_defs.SendKeyCommand[service.data[CONF_STATE]]
+            state = pypck.lcn_defs.SendKeyCommand[service.data[CONF_KEY_STATE]]
             await device_connection.send_keys(keys, state)
 
 
@@ -230,7 +233,7 @@ class LockKeys(LcnServiceCall):
         vol.Required(CONF_KEY): vol.All(
             vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
         ),
-        vol.Required(CONF_STATE): vol.In(
+        vol.Required(CONF_KEY_STATE): vol.In(
             [mod.name for mod in pypck.lcn_defs.KeyLockStateModifier]
         ),
         vol.Optional(CONF_TIME, default=0): cv.positive_int,
@@ -250,7 +253,7 @@ class LockKeys(LcnServiceCall):
 
         states = [pypck.lcn_defs.KeyLockStateModifier["NOCHANGE"]] * 8
         states[key_number] = pypck.lcn_defs.KeyLockStateModifier[
-            service.data[CONF_STATE]
+            service.data[CONF_KEY_STATE]
         ]
 
         if (delay_time := service.data[CONF_TIME]) != 0:

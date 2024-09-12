@@ -55,6 +55,9 @@ CONF_SCENES = "scenes"
 CONF_REGISTER = "register"
 CONF_OUTPUTS = "outputs"
 CONF_REVERSE_TIME = "reverse_time"
+CONF_LOCK_STATE = "lock_state"
+CONF_LED_STATE = "led_state"
+CONF_KEY_STATE = "key_state"
 
 DIM_MODES = ["STEPS50", "STEPS200"]
 
