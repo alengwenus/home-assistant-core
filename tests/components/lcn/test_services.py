@@ -7,9 +7,8 @@ import pytest
 
 from homeassistant.components.lcn import DOMAIN
 from homeassistant.components.lcn.const import (
-    CONF_KEYS,
+    CONF_KEY,
     CONF_LED,
-    CONF_OUTPUT,
     CONF_PCK,
     CONF_RELVARREF,
     CONF_ROW,
@@ -18,17 +17,11 @@ from homeassistant.components.lcn.const import (
     CONF_TEXT,
     CONF_TIME,
     CONF_TIME_UNIT,
-    CONF_TRANSITION,
     CONF_VALUE,
     CONF_VARIABLE,
 )
 from homeassistant.components.lcn.services import LcnService
-from homeassistant.const import (
-    CONF_BRIGHTNESS,
-    CONF_DEVICE_ID,
-    CONF_STATE,
-    CONF_UNIT_OF_MEASUREMENT,
-)
+from homeassistant.const import CONF_DEVICE_ID, CONF_STATE, CONF_UNIT_OF_MEASUREMENT
 from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 
@@ -39,96 +32,6 @@ from .conftest import (
     get_device,
     init_integration,
 )
-
-
-@patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_output_abs(hass: HomeAssistant, entry: MockConfigEntry) -> None:
-    """Test output_abs service."""
-    await async_setup_component(hass, "persistent_notification", {})
-    await init_integration(hass, entry)
-    device = get_device(hass, entry, (0, 7, False))
-
-    with patch.object(MockModuleConnection, "dim_output") as dim_output:
-        await hass.services.async_call(
-            DOMAIN,
-            LcnService.OUTPUT_ABS,
-            {
-                CONF_DEVICE_ID: device.id,
-                CONF_OUTPUT: "output1",
-                CONF_BRIGHTNESS: 100,
-                CONF_TRANSITION: 5,
-            },
-            blocking=True,
-        )
-
-    dim_output.assert_awaited_with(0, 100, 9)
-
-
-@patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_output_rel(hass: HomeAssistant, entry: MockConfigEntry) -> None:
-    """Test output_rel service."""
-    await async_setup_component(hass, "persistent_notification", {})
-    await init_integration(hass, entry)
-    device = get_device(hass, entry, (0, 7, False))
-
-    with patch.object(MockModuleConnection, "rel_output") as rel_output:
-        await hass.services.async_call(
-            DOMAIN,
-            LcnService.OUTPUT_REL,
-            {
-                CONF_DEVICE_ID: device.id,
-                CONF_OUTPUT: "output1",
-                CONF_BRIGHTNESS: 25,
-            },
-            blocking=True,
-        )
-
-    rel_output.assert_awaited_with(0, 25)
-
-
-@patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_output_toggle(
-    hass: HomeAssistant, entry: MockConfigEntry
-) -> None:
-    """Test output_toggle service."""
-    await async_setup_component(hass, "persistent_notification", {})
-    await init_integration(hass, entry)
-    device = get_device(hass, entry, (0, 7, False))
-
-    with patch.object(MockModuleConnection, "toggle_output") as toggle_output:
-        await hass.services.async_call(
-            DOMAIN,
-            LcnService.OUTPUT_TOGGLE,
-            {
-                CONF_DEVICE_ID: device.id,
-                CONF_OUTPUT: "output1",
-                CONF_TRANSITION: 5,
-            },
-            blocking=True,
-        )
-
-    toggle_output.assert_awaited_with(0, 9)
-
-
-@patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
-async def test_service_relays(hass: HomeAssistant, entry: MockConfigEntry) -> None:
-    """Test relays service."""
-    await async_setup_component(hass, "persistent_notification", {})
-    await init_integration(hass, entry)
-    device = get_device(hass, entry, (0, 7, False))
-
-    with patch.object(MockModuleConnection, "control_relays") as control_relays:
-        await hass.services.async_call(
-            DOMAIN,
-            LcnService.RELAYS,
-            {CONF_DEVICE_ID: device.id, CONF_STATE: "0011TT--"},
-            blocking=True,
-        )
-
-    states = ["OFF", "OFF", "ON", "ON", "TOGGLE", "TOGGLE", "NOCHANGE", "NOCHANGE"]
-    relay_states = [pypck.lcn_defs.RelayStateModifier[state] for state in states]
-
-    control_relays.assert_awaited_with(relay_states)
 
 
 @patch("homeassistant.components.lcn.PchkConnectionManager", MockPchkConnectionManager)
@@ -259,14 +162,12 @@ async def test_service_send_keys(hass: HomeAssistant, entry: MockConfigEntry) ->
         await hass.services.async_call(
             DOMAIN,
             LcnService.SEND_KEYS,
-            {CONF_DEVICE_ID: device.id, CONF_KEYS: "a1a5d8", CONF_STATE: "hit"},
+            {CONF_DEVICE_ID: device.id, CONF_KEY: "c5", CONF_STATE: "hit"},
             blocking=True,
         )
 
     keys = [[False] * 8 for i in range(4)]
-    keys[0][0] = True
-    keys[0][4] = True
-    keys[3][7] = True
+    keys[2][4] = True
 
     send_keys.assert_awaited_with(keys, pypck.lcn_defs.SendKeyCommand["HIT"])
 
@@ -281,9 +182,7 @@ async def test_service_send_keys_hit_deferred(
     device = get_device(hass, entry, (0, 7, False))
 
     keys = [[False] * 8 for i in range(4)]
-    keys[0][0] = True
-    keys[0][4] = True
-    keys[3][7] = True
+    keys[2][4] = True
 
     # success
     with patch.object(
@@ -294,7 +193,7 @@ async def test_service_send_keys_hit_deferred(
             LcnService.SEND_KEYS,
             {
                 CONF_DEVICE_ID: device.id,
-                CONF_KEYS: "a1a5d8",
+                CONF_KEY: "c5",
                 CONF_TIME: 5,
                 CONF_TIME_UNIT: "s",
             },
@@ -317,7 +216,7 @@ async def test_service_send_keys_hit_deferred(
             LcnService.SEND_KEYS,
             {
                 CONF_DEVICE_ID: device.id,
-                CONF_KEYS: "a1a5d8",
+                CONF_KEY: "c5",
                 CONF_STATE: "make",
                 CONF_TIME: 5,
                 CONF_TIME_UNIT: "s",

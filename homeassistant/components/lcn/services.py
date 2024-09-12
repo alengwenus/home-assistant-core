@@ -6,20 +6,14 @@ from typing import Any
 import pypck
 import voluptuous as vol
 
-from homeassistant.const import (
-    CONF_BRIGHTNESS,
-    CONF_DEVICE_ID,
-    CONF_STATE,
-    CONF_UNIT_OF_MEASUREMENT,
-)
+from homeassistant.const import CONF_DEVICE_ID, CONF_STATE, CONF_UNIT_OF_MEASUREMENT
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
-    CONF_KEYS,
+    CONF_KEY,
     CONF_LED,
-    CONF_OUTPUT,
     CONF_PCK,
     CONF_RELVARREF,
     CONF_ROW,
@@ -28,14 +22,12 @@ from .const import (
     CONF_TEXT,
     CONF_TIME,
     CONF_TIME_UNIT,
-    CONF_TRANSITION,
     CONF_VALUE,
     CONF_VARIABLE,
     DEVICE_CONNECTIONS,
     DOMAIN,
     LED_PORTS,
     LED_STATUS,
-    OUTPUT_PORTS,
     RELVARREF,
     SENDKEYCOMMANDS,
     SETPOINTS,
@@ -73,98 +65,6 @@ class LcnServiceCall:
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
         raise NotImplementedError
-
-
-class OutputAbs(LcnServiceCall):
-    """Set absolute brightness of output port in percent."""
-
-    extra_fields = {
-        vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
-        vol.Required(CONF_BRIGHTNESS): vol.All(
-            vol.Coerce(int), vol.Range(min=0, max=100)
-        ),
-        vol.Optional(CONF_TRANSITION, default=0): vol.All(
-            vol.Coerce(float), vol.Range(min=0.0, max=486.0)
-        ),
-    }
-
-    schema = LcnServiceCall.schema.extend(extra_fields)
-
-    async def async_call_service(self, service: ServiceCall) -> None:
-        """Execute service call."""
-        output = pypck.lcn_defs.OutputPort[service.data[CONF_OUTPUT]]
-        brightness = service.data[CONF_BRIGHTNESS]
-        transition = pypck.lcn_defs.time_to_ramp_value(
-            service.data[CONF_TRANSITION] * 1000
-        )
-
-        device_connection = self.get_device_connection(service)
-        await device_connection.dim_output(output.value, brightness, transition)
-
-
-class OutputRel(LcnServiceCall):
-    """Set relative brightness of output port in percent."""
-
-    extra_fields = {
-        vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
-        vol.Required(CONF_BRIGHTNESS): vol.All(
-            vol.Coerce(int), vol.Range(min=-100, max=100)
-        ),
-    }
-
-    schema = LcnServiceCall.schema.extend(extra_fields)
-
-    async def async_call_service(self, service: ServiceCall) -> None:
-        """Execute service call."""
-        output = pypck.lcn_defs.OutputPort[service.data[CONF_OUTPUT]]
-        brightness = service.data[CONF_BRIGHTNESS]
-
-        device_connection = self.get_device_connection(service)
-        await device_connection.rel_output(output.value, brightness)
-
-
-class OutputToggle(LcnServiceCall):
-    """Toggle output port."""
-
-    extra_fields = {
-        vol.Required(CONF_OUTPUT): vol.All(vol.Upper, vol.In(OUTPUT_PORTS)),
-        vol.Optional(CONF_TRANSITION, default=0): vol.All(
-            vol.Coerce(float), vol.Range(min=0.0, max=486.0)
-        ),
-    }
-
-    schema = LcnServiceCall.schema.extend(extra_fields)
-
-    async def async_call_service(self, service: ServiceCall) -> None:
-        """Execute service call."""
-        output = pypck.lcn_defs.OutputPort[service.data[CONF_OUTPUT]]
-        transition = pypck.lcn_defs.time_to_ramp_value(
-            service.data[CONF_TRANSITION] * 1000
-        )
-
-        device_connection = self.get_device_connection(service)
-        await device_connection.toggle_output(output.value, transition)
-
-
-class Relays(LcnServiceCall):
-    """Set the relays status."""
-
-    extra_fields = {
-        vol.Required(CONF_STATE): vol.All(
-            vol.Upper, vol.In([mod.name for mod in pypck.lcn_defs.RelayStateModifier])
-        )
-    }
-    schema = LcnServiceCall.schema.extend(extra_fields)
-
-    async def async_call_service(self, service: ServiceCall) -> None:
-        """Execute service call."""
-        states = [
-            pypck.lcn_defs.RelayStateModifier[state]
-            for state in service.data[CONF_STATE]
-        ]
-
-        device_connection = self.get_device_connection(service)
-        await device_connection.control_relays(states)
 
 
 class Led(LcnServiceCall):
@@ -282,7 +182,7 @@ class SendKeys(LcnServiceCall):
     """Sends keys (which executes bound commands)."""
 
     extra_fields = {
-        vol.Required(CONF_KEYS): vol.All(
+        vol.Required(CONF_KEY): vol.All(
             vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
         ),
         vol.Optional(CONF_STATE, default="hit"): vol.All(
@@ -303,7 +203,7 @@ class SendKeys(LcnServiceCall):
         keys = [[False] * 8 for i in range(4)]
 
         key_strings = zip(
-            service.data[CONF_KEYS][::2], service.data[CONF_KEYS][1::2], strict=False
+            service.data[CONF_KEY][::2], service.data[CONF_KEY][1::2], strict=False
         )
 
         for table, key in key_strings:
@@ -419,10 +319,6 @@ class LcnService(StrEnum):
 
 
 SERVICES = (
-    (LcnService.OUTPUT_ABS, OutputAbs),
-    (LcnService.OUTPUT_REL, OutputRel),
-    (LcnService.OUTPUT_TOGGLE, OutputToggle),
-    (LcnService.RELAYS, Relays),
     (LcnService.VAR_ABS, VarAbs),
     (LcnService.VAR_RESET, VarReset),
     (LcnService.VAR_REL, VarRel),
