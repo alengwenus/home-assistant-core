@@ -1,144 +1,112 @@
 """The tests for LCN device actions."""
 
-# import pytest
-# from pytest_unordered import unordered
+import pytest
+from pytest_unordered import unordered
 
-# from homeassistant.components import automation
-# from homeassistant.components.device_automation import DeviceAutomationType
-# from homeassistant.components.lcn import DOMAIN
-# from homeassistant.const import EntityCategory
-# from homeassistant.core import HomeAssistant
-# from homeassistant.helpers import device_registry as dr, entity_registry as er
-# from homeassistant.setup import async_setup_component
+from homeassistant.components import automation
+from homeassistant.components.device_automation import DeviceAutomationType
+from homeassistant.components.lcn import DOMAIN
+from homeassistant.components.lcn.const import (
+    CONF_KEY,
+    CONF_KEY_STATE,
+    CONF_LED,
+    CONF_LED_STATE,
+    CONF_LOCK_STATE,
+    CONF_PCK,
+    CONF_ROW,
+    CONF_SETPOINT,
+    CONF_TEXT,
+    CONF_VALUE,
+    CONF_VARIABLE,
+)
+from homeassistant.components.lcn.device_action import ACTION_TYPES
+from homeassistant.components.lcn.services import LcnService
+from homeassistant.const import CONF_UNIT_OF_MEASUREMENT
+from homeassistant.core import HomeAssistant
+from homeassistant.setup import async_setup_component
 
-# from tests.common import (
-#     MockConfigEntry,
-#     async_get_device_automations,
-#     async_mock_service,
-# )
+from .conftest import MockConfigEntry, get_device, init_integration
 
+from tests.common import async_get_device_automations, async_mock_service
 
-# async def test_get_actions(
-#     hass: HomeAssistant,
-#     device_registry: dr.DeviceRegistry,
-#     entity_registry: er.EntityRegistry,
-# ) -> None:
-#     """Test we get the expected actions from a lcn."""
-#     config_entry = MockConfigEntry(domain="test", data={})
-#     config_entry.add_to_hass(hass)
-#     device_entry = device_registry.async_get_or_create(
-#         config_entry_id=config_entry.entry_id,
-#         connections={(dr.CONNECTION_NETWORK_MAC, "12:34:56:AB:CD:EF")},
-#     )
-#     entity_registry.async_get_or_create(
-#         DOMAIN, "test", "5678", device_id=device_entry.id
-#     )
-#     expected_actions = [
-#         {
-#             "domain": DOMAIN,
-#             "type": action,
-#             "device_id": device_entry.id,
-#             "entity_id": f"{DOMAIN}.test_5678",
-#         }
-#         for action in ["turn_off", "turn_on"]
-#     ]
-#     actions = await async_get_device_automations(
-#         hass, DeviceAutomationType.ACTION, device_entry.id
-#     )
-#     assert actions == unordered(expected_actions)
-
-
-# @pytest.mark.parametrize(
-#     ("hidden_by", "entity_category"),
-#     [
-#         (er.RegistryEntryHider.INTEGRATION, None),
-#         (er.RegistryEntryHider.USER, None),
-#         (None, EntityCategory.CONFIG),
-#         (None, EntityCategory.DIAGNOSTIC),
-#     ],
-# )
-# async def test_get_actions_hidden_auxiliary(
-#     hass: HomeAssistant,
-#     device_registry: dr.DeviceRegistry,
-#     entity_registry: er.EntityRegistry,
-#     hidden_by: er.RegistryEntryHider | None,
-#     entity_category: EntityCategory | None,
-# ):
-#     """Test we get the expected actions from a hidden or auxiliary entity."""
-#     config_entry = MockConfigEntry(domain="test", data={})
-#     config_entry.add_to_hass(hass)
-#     device_entry = device_registry.async_get_or_create(
-#         config_entry_id=config_entry.entry_id,
-#         connections={(dr.CONNECTION_NETWORK_MAC, "12:34:56:AB:CD:EF")},
-#     )
-#     entity_registry.async_get_or_create(
-#         DOMAIN,
-#         "test",
-#         "5678",
-#         device_id=device_entry.id,
-#         entity_category=entity_category,
-#         hidden_by=hidden_by,
-#     )
-#     expected_actions = [
-#         {
-#             "domain": DOMAIN,
-#             "type": action,
-#             "device_id": device_entry.id,
-#             "entity_id": f"{DOMAIN}.test_5678",
-#             "metadata": {"secondary": True},
-#         }
-#         for action in ["turn_off", "turn_on", "toggle"]
-#     ]
-#     actions = await async_get_device_automations(
-#         hass, DeviceAutomationType.ACTION, device_entry.id
-#     )
-#     assert actions == unordered(expected_actions)
+action_data = {
+    LcnService.LED: {
+        CONF_LED: "LED1",
+        CONF_LED_STATE: "ON",
+    },
+    LcnService.VAR_ABS: {
+        CONF_VARIABLE: "var1",
+        CONF_VALUE: 100,
+        CONF_UNIT_OF_MEASUREMENT: "native",
+    },
+    LcnService.VAR_RESET: {CONF_VARIABLE: "var5"},
+    LcnService.VAR_REL: {
+        CONF_VARIABLE: "var2",
+        CONF_VALUE: 50,
+        CONF_UNIT_OF_MEASUREMENT: "percent",
+    },
+    LcnService.LOCK_REGULATOR: {CONF_SETPOINT: "r1varsetpoint", CONF_LOCK_STATE: True},
+    LcnService.SEND_KEY: {CONF_KEY: "a5", CONF_KEY_STATE: "hit"},
+    LcnService.LOCK_KEY: {CONF_KEY: "b4", CONF_LOCK_STATE: "on"},
+    LcnService.DYN_TEXT: {CONF_ROW: 1, CONF_TEXT: "Hello world!"},
+    LcnService.PCK: {CONF_PCK: "PIN001"},
+}
 
 
-# async def test_action(hass: HomeAssistant) -> None:
-#     """Test for turn_on and turn_off actions."""
-#     assert await async_setup_component(
-#         hass,
-#         automation.DOMAIN,
-#         {
-#             automation.DOMAIN: [
-#                 {
-#                     "trigger": {
-#                         "platform": "event",
-#                         "event_type": "test_event_turn_off",
-#                     },
-#                     "action": {
-#                         "domain": DOMAIN,
-#                         "device_id": "abcdefgh",
-#                         "entity_id": "lcn.entity",
-#                         "type": "turn_off",
-#                     },
-#                 },
-#                 {
-#                     "trigger": {
-#                         "platform": "event",
-#                         "event_type": "test_event_turn_on",
-#                     },
-#                     "action": {
-#                         "domain": DOMAIN,
-#                         "device_id": "abcdefgh",
-#                         "entity_id": "lcn.entity",
-#                         "type": "turn_on",
-#                     },
-#                 },
-#             ]
-#         },
-#     )
+async def test_get_actions(
+    hass: HomeAssistant,
+    entry: MockConfigEntry,
+) -> None:
+    """Test we get the expected actions from a lcn."""
+    await init_integration(hass, entry)
+    device_entry = get_device(hass, entry, (0, 7, False))
 
-#     turn_off_calls = async_mock_service(hass, "lcn", "turn_off")
-#     turn_on_calls = async_mock_service(hass, "lcn", "turn_on")
+    expected_actions = [
+        {
+            "domain": DOMAIN,
+            "type": action,
+            "device_id": device_entry.id,
+            "metadata": {},
+        }
+        for action in ACTION_TYPES
+    ]
+    actions = await async_get_device_automations(
+        hass, DeviceAutomationType.ACTION, device_entry.id
+    )
 
-#     hass.bus.async_fire("test_event_turn_off")
-#     await hass.async_block_till_done()
-#     assert len(turn_off_calls) == 1
-#     assert len(turn_on_calls) == 0
+    assert actions == unordered(expected_actions)
 
-#     hass.bus.async_fire("test_event_turn_on")
-#     await hass.async_block_till_done()
-#     assert len(turn_off_calls) == 1
-#     assert len(turn_on_calls) == 1
+
+@pytest.mark.parametrize("action_type", ACTION_TYPES)
+async def test_action(
+    hass: HomeAssistant, entry: MockConfigEntry, action_type: str
+) -> None:
+    """Test for turn_on and turn_off actions."""
+    await init_integration(hass, entry)
+    device_entry = get_device(hass, entry, (0, 7, False))
+    assert await async_setup_component(
+        hass,
+        automation.DOMAIN,
+        {
+            automation.DOMAIN: [
+                {
+                    "trigger": {
+                        "platform": "event",
+                        "event_type": f"test_event_{action_type}",
+                    },
+                    "action": {
+                        "domain": DOMAIN,
+                        "device_id": device_entry.id,
+                        "type": action_type,
+                        **action_data.get(action_type, {}),
+                    },
+                }
+            ]
+        },
+    )
+
+    action_calls = async_mock_service(hass, "lcn", action_type)
+
+    hass.bus.async_fire(f"test_event_{action_type}")
+    await hass.async_block_till_done()
+    assert len(action_calls) == 1

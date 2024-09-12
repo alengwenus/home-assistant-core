@@ -233,8 +233,8 @@ class LockKey(LcnServiceCall):
         vol.Required(CONF_KEY): vol.All(
             vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
         ),
-        vol.Required(CONF_LOCK_STATE): vol.In(
-            [mod.name for mod in pypck.lcn_defs.KeyLockStateModifier]
+        vol.Required(CONF_LOCK_STATE): vol.All(
+            vol.Upper, vol.In([mod.name for mod in pypck.lcn_defs.KeyLockStateModifier])
         ),
         vol.Optional(CONF_TIME, default=0): cv.positive_int,
         vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(
