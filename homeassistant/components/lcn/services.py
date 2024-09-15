@@ -309,8 +309,8 @@ class LcnService(StrEnum):
     VAR_REL = auto()
     LOCK_REGULATOR = auto()
     LED = auto()
-    SEND_KEYS = auto()
-    LOCK_KEYS = auto()
+    SEND_KEY = auto()
+    LOCK_KEY = auto()
     DYN_TEXT = auto()
     PCK = auto()
 
@@ -321,8 +321,8 @@ SERVICES = (
     (LcnService.VAR_REL, VarRel),
     (LcnService.LOCK_REGULATOR, LockRegulator),
     (LcnService.LED, Led),
-    (LcnService.SEND_KEYS, SendKey),
-    (LcnService.LOCK_KEYS, LockKey),
+    (LcnService.SEND_KEY, SendKey),
+    (LcnService.LOCK_KEY, LockKey),
     (LcnService.DYN_TEXT, DynText),
     (LcnService.PCK, Pck),
 )

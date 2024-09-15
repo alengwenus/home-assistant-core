@@ -77,93 +77,21 @@
     }
   },
   "services": {
-    "output_abs": {
-      "name": "Output absolute brightness",
-      "description": "Sets absolute brightness of output port in percent.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "Module address."
-        },
-        "output": {
-          "name": "Output",
-          "description": "Output port."
-        },
-        "brightness": {
-          "name": "Brightness",
-          "description": "Absolute brightness."
-        },
-        "transition": {
-          "name": "Transition",
-          "description": "Transition time."
-        }
-      }
-    },
-    "output_rel": {
-      "name": "Output relative brightness",
-      "description": "Sets relative brightness of output port in percent.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
-        },
-        "output": {
-          "name": "[%key:component::lcn::services::output_abs::fields::output::name%]",
-          "description": "[%key:component::lcn::services::output_abs::fields::output::description%]"
-        },
-        "brightness": {
-          "name": "Brightness",
-          "description": "Relative brightness."
-        }
-      }
-    },
-    "output_toggle": {
-      "name": "Toggle output",
-      "description": "Toggles output port.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
-        },
-        "output": {
-          "name": "[%key:component::lcn::services::output_abs::fields::output::name%]",
-          "description": "[%key:component::lcn::services::output_abs::fields::output::description%]"
-        },
-        "transition": {
-          "name": "Transition",
-          "description": "[%key:component::lcn::services::output_abs::fields::transition::description%]"
-        }
-      }
-    },
-    "relays": {
-      "name": "Relays",
-      "description": "Sets the relays status.",
-      "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
-        },
-        "state": {
-          "name": "State",
-          "description": "Relays states as string (1=on, 2=off, t=toggle, -=no change)."
-        }
-      }
-    },
     "led": {
       "name": "LED",
-      "description": "Sets the led state.",
+      "description": "Sets the LED state.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to set the LED state on."
         },
         "led": {
           "name": "[%key:component::lcn::services::led::name%]",
-          "description": "Led."
+          "description": "LED."
         },
-        "state": {
+        "led_state": {
           "name": "State",
-          "description": "Led state."
+          "description": "LED state."
         }
       }
     },
@@ -171,9 +99,9 @@
       "name": "Set absolute variable",
       "description": "Sets absolute value of a variable or setpoint.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to set the variable value on."
         },
         "variable": {
           "name": "Variable",
@@ -193,9 +121,9 @@
       "name": "Reset variable",
       "description": "Resets value of variable or setpoint.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to reset the variable on."
         },
         "variable": {
           "name": "[%key:component::lcn::services::var_abs::fields::variable::name%]",
@@ -207,9 +135,9 @@
       "name": "Shift variable",
       "description": "Shift value of a variable, setpoint or threshold.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to shift the variable value on."
         },
         "variable": {
           "name": "[%key:component::lcn::services::var_abs::fields::variable::name%]",
@@ -233,33 +161,33 @@
       "name": "Lock regulator",
       "description": "Locks a regulator setpoint.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to set the regulator lock state on."
         },
         "setpoint": {
           "name": "Setpoint",
           "description": "Setpoint name."
         },
-        "state": {
+        "lock_state": {
           "name": "State",
           "description": "New setpoint state."
         }
       }
     },
-    "send_keys": {
-      "name": "Send keys",
-      "description": "Sends keys (which executes bound commands).",
+    "send_key": {
+      "name": "Send key",
+      "description": "Sends key (which executes bound commands).",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to send a key to."
         },
-        "keys": {
-          "name": "Keys",
-          "description": "Keys to send."
+        "key": {
+          "name": "Key",
+          "description": "Key to send."
         },
-        "state": {
+        "key_state": {
           "name": "State",
           "description": "Key state upon sending (must be hit for deferred)."
         },
@@ -273,28 +201,28 @@
         }
       }
     },
-    "lock_keys": {
-      "name": "Lock keys",
-      "description": "Locks keys.",
+    "lock_key": {
+      "name": "Lock key",
+      "description": "Locks key.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to lock a key on."
         },
-        "table": {
-          "name": "Table",
-          "description": "Table with keys to lock (must be A for interval)."
+        "key": {
+          "name": "Key",
+          "description": "Key to change lock state."
         },
-        "state": {
+        "lock_state": {
           "name": "State",
-          "description": "Key lock states as string (1=on, 2=off, T=toggle, -=nochange)."
+          "description": "Key lock state."
         },
         "time": {
-          "name": "Time",
+          "name": "[%key:component::lcn::services::send_key::fields::time::name%]",
           "description": "Lock interval."
         },
         "time_unit": {
-          "name": "[%key:component::lcn::services::send_keys::fields::time_unit::name%]",
+          "name": "[%key:component::lcn::services::send_key::fields::time_unit::name%]",
           "description": "Time unit of lock interval."
         }
       }
@@ -303,9 +231,9 @@
       "name": "Dynamic text",
       "description": "Sends dynamic text to LCN-GTxD displays.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to send a text to."
         },
         "row": {
           "name": "Row",
@@ -321,14 +249,40 @@
       "name": "PCK",
       "description": "Sends arbitrary PCK command.",
       "fields": {
-        "address": {
-          "name": "Address",
-          "description": "[%key:component::lcn::services::output_abs::fields::address::description%]"
+        "device_id": {
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to send a PCK command to."
         },
         "pck": {
           "name": "[%key:component::lcn::services::pck::name%]",
           "description": "PCK command (without address header)."
         }
+      }
+    }
+  },
+  "selector": {
+    "led_state": {
+      "options": {
+        "blink": "Blink",
+        "flicker": "Flicker",
+        "off": "Off",
+        "on": "On"
+      }
+    },
+    "key_state": {
+      "options": {
+        "hit": "Hit",
+        "make": "Make",
+        "break": "Break",
+        "dontsend": "Don't send"
+      }
+    },
+    "lock_state": {
+      "options": {
+        "on": "On",
+        "off": "Off",
+        "toggle": "Toggle",
+        "nochange": "No change"
       }
     }
   }

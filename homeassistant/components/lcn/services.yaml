@@ -1,104 +1,10 @@
 # Describes the format for available LCN services
 
-output_abs:
-  fields:
-    address:
-      required: true
-      example: "myhome.s0.m7"
-      selector:
-        text:
-    output:
-      required: true
-      selector:
-        select:
-          options:
-            - "output1"
-            - "output2"
-            - "output3"
-            - "output4"
-    brightness:
-      required: true
-      selector:
-        number:
-          min: 0
-          max: 100
-          unit_of_measurement: "%"
-    transition:
-      default: 0
-      selector:
-        number:
-          min: 0
-          max: 486
-          step: 0.1
-          unit_of_measurement: seconds
-
-output_rel:
-  fields:
-    address:
-      required: true
-      example: "myhome.s0.m7"
-      selector:
-        text:
-    output:
-      required: true
-      selector:
-        select:
-          options:
-            - "output1"
-            - "output2"
-            - "output3"
-            - "output4"
-    brightness:
-      required: true
-      selector:
-        number:
-          min: -100
-          max: 100
-          unit_of_measurement: "%"
-
-output_toggle:
-  fields:
-    address:
-      required: true
-      example: "myhome.s0.m7"
-      selector:
-        text:
-    output:
-      required: true
-      selector:
-        select:
-          options:
-            - "output1"
-            - "output2"
-            - "output3"
-            - "output4"
-    transition:
-      default: 0
-      selector:
-        number:
-          min: 0
-          max: 486
-          step: 0.1
-          unit_of_measurement: seconds
-
-relays:
-  fields:
-    address:
-      required: true
-      example: "myhome.s0.m7"
-      selector:
-        text:
-    state:
-      required: true
-      example: "t---001-"
-      selector:
-        text:
-
 led:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     led:
@@ -118,7 +24,7 @@ led:
             - "led10"
             - "led11"
             - "led12"
-    state:
+    led_state:
       required: true
       selector:
         select:
@@ -130,12 +36,12 @@ led:
 
 var_abs:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    variable:
+    variable: &variable-field
       required: true
       default: native
       selector:
@@ -197,42 +103,18 @@ var_abs:
 
 var_reset:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    variable:
-      required: true
-      selector:
-        select:
-          options:
-            - "r1var"
-            - "r2var"
-            - "r1varsetpoint"
-            - "r2varsetpoint"
-            - "tvar"
-            - "var1ortvar"
-            - "var2orr1var"
-            - "var3orr2var"
-            - "var1"
-            - "var2"
-            - "var3"
-            - "var4"
-            - "var5"
-            - "var6"
-            - "var7"
-            - "var8"
-            - "var9"
-            - "var10"
-            - "var11"
-            - "var12"
+    variable: *variable-field
 
 var_rel:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     variable:
@@ -321,9 +203,9 @@ var_rel:
 
 lock_regulator:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     setpoint:
@@ -348,27 +230,61 @@ lock_regulator:
             - "thrs4_2"
             - "thrs4_3"
             - "thrs4_4"
-    state:
+    lock_state:
       default: false
       selector:
         boolean:
 
-send_keys:
+send_key:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    keys:
+    key: &key-field
       required: true
-      example: "a1a5d8"
+      example: "a5"
       selector:
-        text:
-    state:
+        select:
+          options:
+            - "a1"
+            - "a2"
+            - "a3"
+            - "a4"
+            - "a5"
+            - "a6"
+            - "a7"
+            - "a8"
+            - "b1"
+            - "b2"
+            - "b3"
+            - "b4"
+            - "b5"
+            - "b6"
+            - "b7"
+            - "b8"
+            - "c1"
+            - "c2"
+            - "c3"
+            - "c4"
+            - "c5"
+            - "c6"
+            - "c7"
+            - "c8"
+            - "d1"
+            - "d2"
+            - "d3"
+            - "d4"
+            - "d5"
+            - "d6"
+            - "d7"
+            - "d8"
+    key_state:
       default: hit
       selector:
         select:
+          translation_key: "key_state"
           options:
             - "hit"
             - "make"
@@ -380,74 +296,47 @@ send_keys:
         number:
           min: 0
           max: 60
-    time_unit:
-      default: s
+    time_unit: &time-unit-field
+      default: "seconds"
       selector:
         select:
           options:
-            - "d"
-            - "day"
             - "days"
-            - "h"
-            - "hour"
             - "hours"
-            - "m"
-            - "min"
-            - "minute"
             - "minutes"
-            - "s"
-            - "sec"
-            - "second"
             - "seconds"
 
-lock_keys:
+lock_key:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    table:
-      example: "a"
-      default: a
+    key: *key-field
+    lock_state:
+      default: "on"
       selector:
-        text:
-    state:
-      required: true
-      example: "1---t0--"
-      selector:
-        text:
+        select:
+          translation_key: "lock_state"
+          options:
+            - "on"
+            - "off"
+            - "toggle"
+            - "nochange"
     time:
       default: 0
       selector:
         number:
           min: 0
           max: 60
-    time_unit:
-      default: s
-      selector:
-        select:
-          options:
-            - "d"
-            - "day"
-            - "days"
-            - "h"
-            - "hour"
-            - "hours"
-            - "m"
-            - "min"
-            - "minute"
-            - "minutes"
-            - "s"
-            - "sec"
-            - "second"
-            - "seconds"
+    time_unit: *time-unit-field
 
 dyn_text:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     row:
@@ -464,9 +353,9 @@ dyn_text:
 
 pck:
   fields:
-    address:
+    device_id:
       required: true
-      example: "myhome.s0.m7"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     pck:
