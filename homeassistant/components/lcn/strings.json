@@ -7,36 +7,11 @@
       "codelock": "Code lock code received",
       "send_keys": "Send keys received"
     },
-    "action_type": {
-      "var_abs": "Set absolute variable value",
-      "var_rel": "Set relative variable value",
-      "var_reset": "Reset variable value",
-      "lock_regulator": "Lock regulator",
-      "led": "Set LED status",
-      "send_key": "Send key",
-      "lock_key": "Lock key",
-      "dyn_text": "Send text",
-      "pck": "Send PCK command"
-    },
     "extra_fields": {
       "action": "Action",
       "code": "Code",
       "key": "Key",
-      "level": "Level",
-      "value": "Value",
-      "value_reference": "Value reference",
-      "variable": "Variable",
-      "setpoint": "Setpoint",
-      "lock_state": "Lock state",
-      "led_state": "LED state",
-      "key_state": "Key state",
-      "led": "LED",
-      "time": "Time",
-      "time_unit": "Time unit",
-      "unit_of_measurement": "Unit of measurement",
-      "text": "Text",
-      "row": "Row",
-      "pck": "PCK command"
+      "level": "Level"
     }
   },
   "config": {
@@ -104,19 +79,19 @@
   "services": {
     "led": {
       "name": "LED",
-      "description": "Sets the led state.",
+      "description": "Sets the LED state.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "Home Assistant device ID"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to set the LED state on."
         },
         "led": {
           "name": "[%key:component::lcn::services::led::name%]",
-          "description": "Led."
+          "description": "LED."
         },
         "led_state": {
           "name": "State",
-          "description": "Led state."
+          "description": "LED state."
         }
       }
     },
@@ -125,8 +100,8 @@
       "description": "Sets absolute value of a variable or setpoint.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to set the variable value on."
         },
         "variable": {
           "name": "Variable",
@@ -147,8 +122,8 @@
       "description": "Resets value of variable or setpoint.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to reset the variable on."
         },
         "variable": {
           "name": "[%key:component::lcn::services::var_abs::fields::variable::name%]",
@@ -161,8 +136,8 @@
       "description": "Shift value of a variable, setpoint or threshold.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to shift the variable value on."
         },
         "variable": {
           "name": "[%key:component::lcn::services::var_abs::fields::variable::name%]",
@@ -187,16 +162,16 @@
       "description": "Locks a regulator setpoint.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to set the regulator lock state on."
         },
         "setpoint": {
           "name": "Setpoint",
           "description": "Setpoint name."
         },
         "lock_state": {
-          "name": "Lock state",
-          "description": "New setpoint lock state."
+          "name": "State",
+          "description": "New setpoint state."
         }
       }
     },
@@ -205,15 +180,15 @@
       "description": "Sends key (which executes bound commands).",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to send a key to."
         },
         "key": {
           "name": "Key",
           "description": "Key to send."
         },
         "key_state": {
-          "name": "Key state",
+          "name": "State",
           "description": "Key state upon sending (must be hit for deferred)."
         },
         "time": {
@@ -231,19 +206,19 @@
       "description": "Locks key.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to lock a key on."
         },
         "key": {
           "name": "Key",
-          "description": "Key to lock (must be table A for interval)."
+          "description": "Key to change lock state."
         },
-        "key_state": {
-          "name": "Key state",
-          "description": "Key lock state as string (on, off, toggle, nochange)."
+        "lock_state": {
+          "name": "State",
+          "description": "Key lock state."
         },
         "time": {
-          "name": "Time",
+          "name": "[%key:component::lcn::services::send_key::fields::time::name%]",
           "description": "Lock interval."
         },
         "time_unit": {
@@ -257,8 +232,8 @@
       "description": "Sends dynamic text to LCN-GTxD displays.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to send a text to."
         },
         "row": {
           "name": "Row",
@@ -275,13 +250,39 @@
       "description": "Sends arbitrary PCK command.",
       "fields": {
         "device_id": {
-          "name": "Device ID",
-          "description": "[%key:component::lcn::services::led::fields::device_id::description%]"
+          "name": "[%key:common::config_flow::data::device%]",
+          "description": "The LCN device to send a PCK command to."
         },
         "pck": {
           "name": "[%key:component::lcn::services::pck::name%]",
           "description": "PCK command (without address header)."
         }
+      }
+    }
+  },
+  "selector": {
+    "led_state": {
+      "options": {
+        "blink": "Blink",
+        "flicker": "Flicker",
+        "off": "Off",
+        "on": "On"
+      }
+    },
+    "key_state": {
+      "options": {
+        "hit": "Hit",
+        "make": "Make",
+        "break": "Break",
+        "dontsend": "Don't send"
+      }
+    },
+    "lock_state": {
+      "options": {
+        "on": "On",
+        "off": "Off",
+        "toggle": "Toggle",
+        "nochange": "No change"
       }
     }
   }

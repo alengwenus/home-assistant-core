@@ -54,7 +54,7 @@ class LcnServiceCall:
         self.hass = hass
 
     def get_device_connection(self, service: ServiceCall) -> DeviceConnectionType:
-        """Get LCN device connection object."""
+        """Get address connection object."""
         device_id = service.data[CONF_DEVICE_ID]
         device_registry = dr.async_get(self.hass)
         if not (device := device_registry.async_get(device_id)):
@@ -76,7 +76,6 @@ class Led(LcnServiceCall):
         vol.Required(CONF_LED): vol.All(vol.Upper, vol.In(LED_PORTS)),
         vol.Required(CONF_LED_STATE): vol.All(vol.Upper, vol.In(LED_STATUS)),
     }
-
     schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
@@ -102,7 +101,6 @@ class VarAbs(LcnServiceCall):
             vol.Upper, vol.In(VAR_UNITS)
         ),
     }
-
     schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
@@ -146,7 +144,6 @@ class VarRel(LcnServiceCall):
             vol.Upper, vol.In(RELVARREF)
         ),
     }
-
     schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
@@ -167,7 +164,6 @@ class LockRegulator(LcnServiceCall):
         vol.Required(CONF_SETPOINT): vol.All(vol.Upper, vol.In(SETPOINTS)),
         vol.Optional(CONF_LOCK_STATE, default=False): bool,
     }
-
     schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
@@ -195,7 +191,6 @@ class SendKey(LcnServiceCall):
             vol.Upper, vol.In(TIME_UNITS)
         ),
     }
-
     schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
@@ -241,7 +236,6 @@ class LockKey(LcnServiceCall):
             vol.Upper, vol.In(TIME_UNITS)
         ),
     }
-
     schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:
@@ -279,7 +273,6 @@ class DynText(LcnServiceCall):
         vol.Required(CONF_ROW): vol.All(int, vol.Range(min=1, max=4)),
         vol.Required(CONF_TEXT): vol.All(str, vol.Length(max=60)),
     }
-
     schema = LcnServiceCall.schema.extend(extra_fields)
 
     async def async_call_service(self, service: ServiceCall) -> None:

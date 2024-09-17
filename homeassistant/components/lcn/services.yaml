@@ -4,7 +4,7 @@ led:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     led:
@@ -38,11 +38,12 @@ var_abs:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     variable:
       required: true
+      default: native
       selector:
         select:
           options:
@@ -73,7 +74,6 @@ var_abs:
           min: 0
           max: 100000
     unit_of_measurement:
-      default: native
       selector:
         select:
           options:
@@ -105,11 +105,12 @@ var_reset:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     variable:
       required: true
+      default: native
       selector:
         select:
           options:
@@ -138,7 +139,7 @@ var_rel:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     variable:
@@ -229,7 +230,7 @@ lock_regulator:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     setpoint:
@@ -263,18 +264,52 @@ send_key:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     key:
       required: true
       example: "a5"
       selector:
-        text:
+        select:
+          options:
+            - "a1"
+            - "a2"
+            - "a3"
+            - "a4"
+            - "a5"
+            - "a6"
+            - "a7"
+            - "a8"
+            - "b1"
+            - "b2"
+            - "b3"
+            - "b4"
+            - "b5"
+            - "b6"
+            - "b7"
+            - "b8"
+            - "c1"
+            - "c2"
+            - "c3"
+            - "c4"
+            - "c5"
+            - "c6"
+            - "c7"
+            - "c8"
+            - "d1"
+            - "d2"
+            - "d3"
+            - "d4"
+            - "d5"
+            - "d6"
+            - "d7"
+            - "d8"
     key_state:
       default: hit
       selector:
         select:
+          translation_key: "key_state"
           options:
             - "hit"
             - "make"
@@ -287,42 +322,65 @@ send_key:
           min: 0
           max: 60
     time_unit:
-      default: s
+      default: "seconds"
       selector:
         select:
           options:
-            - "d"
-            - "day"
             - "days"
-            - "h"
-            - "hour"
             - "hours"
-            - "m"
-            - "min"
-            - "minute"
             - "minutes"
-            - "s"
-            - "sec"
-            - "second"
             - "seconds"
 
 lock_key:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     key:
       required: true
       example: "a5"
       selector:
-        text:
-    key_state:
-      required: true
-      example: "on"
+        select:
+          options:
+            - "a1"
+            - "a2"
+            - "a3"
+            - "a4"
+            - "a5"
+            - "a6"
+            - "a7"
+            - "a8"
+            - "b1"
+            - "b2"
+            - "b3"
+            - "b4"
+            - "b5"
+            - "b6"
+            - "b7"
+            - "b8"
+            - "c1"
+            - "c2"
+            - "c3"
+            - "c4"
+            - "c5"
+            - "c6"
+            - "c7"
+            - "c8"
+            - "d1"
+            - "d2"
+            - "d3"
+            - "d4"
+            - "d5"
+            - "d6"
+            - "d7"
+            - "d8"
+    lock_state:
+      default: "on"
       selector:
         select:
+          translation_key: "lock_state"
           options:
             - "on"
             - "off"
@@ -335,30 +393,20 @@ lock_key:
           min: 0
           max: 60
     time_unit:
-      default: s
+      default: "seconds"
       selector:
         select:
           options:
-            - "d"
-            - "day"
             - "days"
-            - "h"
-            - "hour"
             - "hours"
-            - "m"
-            - "min"
-            - "minute"
             - "minutes"
-            - "s"
-            - "sec"
-            - "second"
             - "seconds"
 
 dyn_text:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     row:
@@ -377,7 +425,7 @@ pck:
   fields:
     device_id:
       required: true
-      example: "57a7ef91bc2537b72f99a95197a2e680"
+      example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
     pck:
