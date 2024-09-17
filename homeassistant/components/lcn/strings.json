@@ -273,16 +273,14 @@
       "options": {
         "hit": "Hit",
         "make": "Make",
-        "break": "Break",
-        "dontsend": "Don't send"
+        "break": "Break"
       }
     },
     "lock_state": {
       "options": {
         "on": "On",
         "off": "Off",
-        "toggle": "Toggle",
-        "nochange": "No change"
+        "toggle": "Toggle"
       }
     }
   }

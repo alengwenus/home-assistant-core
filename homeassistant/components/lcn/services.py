@@ -28,6 +28,8 @@ from .const import (
     CONF_VARIABLE,
     DEVICE_CONNECTIONS,
     DOMAIN,
+    KEYLOCKSTATEMODIFIERS,
+    KEYS,
     LED_PORTS,
     LED_STATUS,
     RELVARREF,
@@ -96,7 +98,7 @@ class VarAbs(LcnServiceCall):
 
     extra_fields = {
         vol.Required(CONF_VARIABLE): vol.All(vol.Upper, vol.In(VARIABLES + SETPOINTS)),
-        vol.Optional(CONF_VALUE, default=0): vol.Coerce(float),
+        vol.Required(CONF_VALUE): vol.Coerce(float),
         vol.Optional(CONF_UNIT_OF_MEASUREMENT, default="native"): vol.All(
             vol.Upper, vol.In(VAR_UNITS)
         ),
@@ -136,7 +138,7 @@ class VarRel(LcnServiceCall):
         vol.Required(CONF_VARIABLE): vol.All(
             vol.Upper, vol.In(VARIABLES + SETPOINTS + THRESHOLDS)
         ),
-        vol.Optional(CONF_VALUE, default=0): vol.Coerce(float),
+        vol.Required(CONF_VALUE): vol.Coerce(float),
         vol.Optional(CONF_UNIT_OF_MEASUREMENT, default="native"): vol.All(
             vol.Upper, vol.In(VAR_UNITS)
         ),
@@ -162,7 +164,7 @@ class LockRegulator(LcnServiceCall):
 
     extra_fields = {
         vol.Required(CONF_SETPOINT): vol.All(vol.Upper, vol.In(SETPOINTS)),
-        vol.Optional(CONF_LOCK_STATE, default=False): bool,
+        vol.Required(CONF_LOCK_STATE): bool,
     }
     schema = LcnServiceCall.schema.extend(extra_fields)
 
@@ -180,10 +182,8 @@ class SendKey(LcnServiceCall):
     """Sends key (which executes bound commands)."""
 
     extra_fields = {
-        vol.Required(CONF_KEY): vol.All(
-            vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
-        ),
-        vol.Optional(CONF_KEY_STATE, default="hit"): vol.All(
+        vol.Required(CONF_KEY): vol.All(vol.Upper, vol.In(KEYS)),
+        vol.Required(CONF_KEY_STATE, default="hit"): vol.All(
             vol.Upper, vol.In(SENDKEYCOMMANDS)
         ),
         vol.Optional(CONF_TIME, default=0): cv.positive_int,
@@ -225,11 +225,9 @@ class LockKey(LcnServiceCall):
     """Lock keys."""
 
     extra_fields = {
-        vol.Required(CONF_KEY): vol.All(
-            vol.Upper, vol.In([key.name for key in pypck.lcn_defs.Key])
-        ),
+        vol.Required(CONF_KEY): vol.All(vol.Upper, vol.In(KEYS)),
         vol.Required(CONF_LOCK_STATE): vol.All(
-            vol.Upper, vol.In([mod.name for mod in pypck.lcn_defs.KeyLockStateModifier])
+            vol.Upper, vol.In(KEYLOCKSTATEMODIFIERS)
         ),
         vol.Optional(CONF_TIME, default=0): cv.positive_int,
         vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(

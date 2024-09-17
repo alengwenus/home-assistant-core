@@ -9,6 +9,7 @@ led:
         text:
     led:
       required: true
+      default: "led1"
       selector:
         select:
           options:
@@ -26,13 +27,14 @@ led:
             - "led12"
     led_state:
       required: true
+      default: "on"
       selector:
         select:
           options:
+            - "on"
+            - "off"
             - "blink"
             - "flicker"
-            - "off"
-            - "on"
 
 var_abs:
   fields:
@@ -43,7 +45,6 @@ var_abs:
         text:
     variable:
       required: true
-      default: native
       selector:
         select:
           options:
@@ -68,6 +69,7 @@ var_abs:
             - "var11"
             - "var12"
     value:
+      required: true
       default: 0
       selector:
         number:
@@ -77,7 +79,6 @@ var_abs:
       selector:
         select:
           options:
-            - ""
             - "%"
             - "°"
             - "°C"
@@ -110,7 +111,6 @@ var_reset:
         text:
     variable:
       required: true
-      default: native
       selector:
         select:
           options:
@@ -185,17 +185,16 @@ var_rel:
             - "var11"
             - "var12"
     value:
+      required: true
       default: 0
       selector:
         number:
           min: 0
           max: 100000
     unit_of_measurement:
-      default: native
       selector:
         select:
           options:
-            - ""
             - "%"
             - "°"
             - "°C"
@@ -219,7 +218,6 @@ var_rel:
             - "v"
             - "volt"
     value_reference:
-      default: current
       selector:
         select:
           options:
@@ -235,6 +233,7 @@ lock_regulator:
         text:
     setpoint:
       required: true
+      default: "thrs1"
       selector:
         select:
           options:
@@ -256,7 +255,7 @@ lock_regulator:
             - "thrs4_3"
             - "thrs4_4"
     lock_state:
-      default: false
+      required: true
       selector:
         boolean:
 
@@ -269,6 +268,7 @@ send_key:
         text:
     key:
       required: true
+      default: "a1"
       example: "a5"
       selector:
         select:
@@ -306,7 +306,8 @@ send_key:
             - "d7"
             - "d8"
     key_state:
-      default: hit
+      required: true
+      default: "hit"
       selector:
         select:
           translation_key: "key_state"
@@ -314,15 +315,12 @@ send_key:
             - "hit"
             - "make"
             - "break"
-            - "dontsend"
     time:
-      default: 0
       selector:
         number:
           min: 0
           max: 60
     time_unit:
-      default: "seconds"
       selector:
         select:
           options:
@@ -340,6 +338,7 @@ lock_key:
         text:
     key:
       required: true
+      default: "a1"
       example: "a5"
       selector:
         select:
@@ -377,6 +376,7 @@ lock_key:
             - "d7"
             - "d8"
     lock_state:
+      required: true
       default: "on"
       selector:
         select:
@@ -385,15 +385,12 @@ lock_key:
             - "on"
             - "off"
             - "toggle"
-            - "nochange"
     time:
-      default: 0
       selector:
         number:
           min: 0
           max: 60
     time_unit:
-      default: "seconds"
       selector:
         select:
           options:
@@ -411,8 +408,10 @@ dyn_text:
         text:
     row:
       required: true
+      default: 1
       selector:
         number:
+          mode: "box"
           min: 1
           max: 4
     text:
