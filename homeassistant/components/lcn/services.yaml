@@ -41,7 +41,7 @@ var_abs:
       example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    variable: &variable-field
+    variable:
       required: true
       default: native
       selector:
@@ -108,7 +108,32 @@ var_reset:
       example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    variable: *variable-field
+    variable:
+      required: true
+      default: native
+      selector:
+        select:
+          options:
+            - "r1var"
+            - "r2var"
+            - "r1varsetpoint"
+            - "r2varsetpoint"
+            - "tvar"
+            - "var1ortvar"
+            - "var2orr1var"
+            - "var3orr2var"
+            - "var1"
+            - "var2"
+            - "var3"
+            - "var4"
+            - "var5"
+            - "var6"
+            - "var7"
+            - "var8"
+            - "var9"
+            - "var10"
+            - "var11"
+            - "var12"
 
 var_rel:
   fields:
@@ -242,7 +267,7 @@ send_key:
       example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    key: &key-field
+    key:
       required: true
       example: "a5"
       selector:
@@ -296,7 +321,7 @@ send_key:
         number:
           min: 0
           max: 60
-    time_unit: &time-unit-field
+    time_unit:
       default: "seconds"
       selector:
         select:
@@ -313,7 +338,44 @@ lock_key:
       example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    key: *key-field
+    key:
+      required: true
+      example: "a5"
+      selector:
+        select:
+          options:
+            - "a1"
+            - "a2"
+            - "a3"
+            - "a4"
+            - "a5"
+            - "a6"
+            - "a7"
+            - "a8"
+            - "b1"
+            - "b2"
+            - "b3"
+            - "b4"
+            - "b5"
+            - "b6"
+            - "b7"
+            - "b8"
+            - "c1"
+            - "c2"
+            - "c3"
+            - "c4"
+            - "c5"
+            - "c6"
+            - "c7"
+            - "c8"
+            - "d1"
+            - "d2"
+            - "d3"
+            - "d4"
+            - "d5"
+            - "d6"
+            - "d7"
+            - "d8"
     lock_state:
       default: "on"
       selector:
@@ -330,7 +392,15 @@ lock_key:
         number:
           min: 0
           max: 60
-    time_unit: *time-unit-field
+    time_unit:
+      default: "seconds"
+      selector:
+        select:
+          options:
+            - "days"
+            - "hours"
+            - "minutes"
+            - "seconds"
 
 dyn_text:
   fields:
