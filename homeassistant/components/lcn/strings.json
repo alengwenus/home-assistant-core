@@ -175,17 +175,17 @@
         }
       }
     },
-    "send_key": {
-      "name": "Send key",
-      "description": "Sends key (which executes bound commands).",
+    "send_keys": {
+      "name": "Send keys",
+      "description": "Sends keys (which execute bound commands).",
       "fields": {
         "device_id": {
           "name": "[%key:common::config_flow::data::device%]",
           "description": "The LCN device to send a key to."
         },
-        "key": {
-          "name": "Key",
-          "description": "Key to send."
+        "keys": {
+          "name": "Keys",
+          "description": "Keys to send."
         },
         "key_state": {
           "name": "State",
@@ -201,28 +201,28 @@
         }
       }
     },
-    "lock_key": {
-      "name": "Lock key",
-      "description": "Locks key.",
+    "lock_keys": {
+      "name": "Lock keys",
+      "description": "Locks keys.",
       "fields": {
         "device_id": {
           "name": "[%key:common::config_flow::data::device%]",
           "description": "The LCN device to lock a key on."
         },
-        "key": {
-          "name": "Key",
+        "keys": {
+          "name": "Keys",
           "description": "Key to change lock state."
         },
         "lock_state": {
           "name": "State",
-          "description": "Key lock state."
+          "description": "Keys lock state."
         },
         "time": {
-          "name": "[%key:component::lcn::services::send_key::fields::time::name%]",
+          "name": "[%key:component::lcn::services::send_keys::fields::time::name%]",
           "description": "Lock interval."
         },
         "time_unit": {
-          "name": "[%key:component::lcn::services::send_key::fields::time_unit::name%]",
+          "name": "[%key:component::lcn::services::send_keys::fields::time_unit::name%]",
           "description": "Time unit of lock interval."
         }
       }

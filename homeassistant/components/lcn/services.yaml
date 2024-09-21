@@ -259,19 +259,19 @@ lock_regulator:
       selector:
         boolean:
 
-send_key:
+send_keys:
   fields:
     device_id:
       required: true
       example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    key:
+    keys:
       required: true
-      default: "a1"
       example: "a5"
       selector:
         select:
+          multiple: true
           options:
             - "a1"
             - "a2"
@@ -329,19 +329,19 @@ send_key:
             - "minutes"
             - "seconds"
 
-lock_key:
+lock_keys:
   fields:
     device_id:
       required: true
       example: "91aa039a2fb6e0b9f9ec7eb219a6b7d2"
       selector:
         text:
-    key:
+    keys:
       required: true
-      default: "a1"
       example: "a5"
       selector:
         select:
+          multiple: true
           options:
             - "a1"
             - "a2"

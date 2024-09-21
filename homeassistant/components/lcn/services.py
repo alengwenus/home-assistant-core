@@ -12,8 +12,8 @@ from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
-    CONF_KEY,
     CONF_KEY_STATE,
+    CONF_KEYS,
     CONF_LED,
     CONF_LED_STATE,
     CONF_LOCK_STATE,
@@ -178,11 +178,11 @@ class LockRegulator(LcnServiceCall):
         await device_connection.lock_regulator(reg_id, state)
 
 
-class SendKey(LcnServiceCall):
-    """Sends key (which executes bound commands)."""
+class SendKeys(LcnServiceCall):
+    """Sends keys (which executes bound commands)."""
 
     extra_fields = {
-        vol.Required(CONF_KEY): vol.All(vol.Upper, vol.In(KEYS)),
+        vol.Required(CONF_KEYS): [vol.All(vol.Upper, vol.In(KEYS))],
         vol.Required(CONF_KEY_STATE, default="hit"): vol.All(
             vol.Upper, vol.In(SENDKEYCOMMANDS)
         ),
@@ -196,17 +196,7 @@ class SendKey(LcnServiceCall):
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
         device_connection = self.get_device_connection(service)
-
-        keys = [[False] * 8 for i in range(4)]
-
-        key_strings = zip(
-            service.data[CONF_KEY][::2], service.data[CONF_KEY][1::2], strict=False
-        )
-
-        for table, key in key_strings:
-            table_id = ord(table) - 65
-            key_id = int(key) - 1
-            keys[table_id][key_id] = True
+        keys = [pypck.lcn_defs.Key[key] for key in service.data[CONF_KEYS]]
 
         if (delay_time := service.data[CONF_TIME]) != 0:
             hit = pypck.lcn_defs.SendKeyCommand.HIT
@@ -221,11 +211,11 @@ class SendKey(LcnServiceCall):
             await device_connection.send_keys(keys, state)
 
 
-class LockKey(LcnServiceCall):
+class LockKeys(LcnServiceCall):
     """Lock keys."""
 
     extra_fields = {
-        vol.Required(CONF_KEY): vol.All(vol.Upper, vol.In(KEYS)),
+        vol.Required(CONF_KEYS): [vol.All(vol.Upper, vol.In(KEYS))],
         vol.Required(CONF_LOCK_STATE): vol.All(
             vol.Upper, vol.In(KEYLOCKSTATEMODIFIERS)
         ),
@@ -239,26 +229,30 @@ class LockKey(LcnServiceCall):
     async def async_call_service(self, service: ServiceCall) -> None:
         """Execute service call."""
         device_connection = self.get_device_connection(service)
-
-        table_id = ord(service.data[CONF_KEY][0]) - 65
-        key_number = int(service.data[CONF_KEY][1]) - 1
-
-        states = [pypck.lcn_defs.KeyLockStateModifier["NOCHANGE"]] * 8
-        states[key_number] = pypck.lcn_defs.KeyLockStateModifier[
-            service.data[CONF_LOCK_STATE]
-        ]
+        keys = [pypck.lcn_defs.Key[key] for key in service.data[CONF_KEYS]]
+        states = [pypck.lcn_defs.KeyLockStateModifier.NOCHANGE] * 8
 
         if (delay_time := service.data[CONF_TIME]) != 0:
-            if table_id != 0:
+            table_ids, key_ids = zip(*[key.value for key in keys], strict=True)
+            if any(table_ids):
                 raise ValueError(
                     "Only table A is allowed when locking keys for a specific time."
                 )
             delay_unit = pypck.lcn_defs.TimeUnit.parse(service.data[CONF_TIME_UNIT])
+            for key_id in key_ids:
+                states[key_id] = pypck.lcn_defs.KeyLockStateModifier[
+                    service.data[CONF_LOCK_STATE]
+                ]
+                if pypck.lcn_defs.KeyLockStateModifier.TOGGLE in states:
+                    raise ValueError(
+                        "Only lock states 'on' and 'off' are allowed when locking keys for a specific time."
+                    )
             await device_connection.lock_keys_tab_a_temporary(
                 delay_time, delay_unit, states
             )
         else:
-            await device_connection.lock_keys(table_id, states)
+            state = pypck.lcn_defs.KeyLockStateModifier[service.data[CONF_LOCK_STATE]]
+            await device_connection.lock_keys(keys, state)
 
         handler = device_connection.status_requests_handler
         await handler.request_status_locked_keys_timeout()
@@ -307,8 +301,8 @@ class LcnService(StrEnum):
     VAR_REL = auto()
     LOCK_REGULATOR = auto()
     LED = auto()
-    SEND_KEY = auto()
-    LOCK_KEY = auto()
+    SEND_KEYS = auto()
+    LOCK_KEYS = auto()
     DYN_TEXT = auto()
     PCK = auto()
 
@@ -319,8 +313,8 @@ SERVICES = (
     (LcnService.VAR_REL, VarRel),
     (LcnService.LOCK_REGULATOR, LockRegulator),
     (LcnService.LED, Led),
-    (LcnService.SEND_KEY, SendKey),
-    (LcnService.LOCK_KEY, LockKey),
+    (LcnService.SEND_KEYS, SendKeys),
+    (LcnService.LOCK_KEYS, LockKeys),
     (LcnService.DYN_TEXT, DynText),
     (LcnService.PCK, Pck),
 )

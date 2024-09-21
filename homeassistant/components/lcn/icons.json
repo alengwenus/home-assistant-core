@@ -1,17 +1,5 @@
 {
   "services": {
-    "output_abs": {
-      "service": "mdi:brightness-auto"
-    },
-    "output_rel": {
-      "service": "mdi:brightness-7"
-    },
-    "output_toggle": {
-      "service": "mdi:toggle-switch"
-    },
-    "relays": {
-      "service": "mdi:light-switch-off"
-    },
     "led": {
       "service": "mdi:led-on"
     },
@@ -27,10 +15,10 @@
     "lock_regulator": {
       "service": "mdi:lock"
     },
-    "send_key": {
+    "send_keys": {
       "service": "mdi:alarm-panel"
     },
-    "lock_key": {
+    "lock_keys": {
       "service": "mdi:lock"
     },
     "dyn_text": {
