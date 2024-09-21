@@ -1,5 +1,16 @@
 {
   "device_automation": {
+    "action_type": {
+      "var_abs": "[%key:component::lcn::services::var_abs::name%]",
+      "var_reset": "[%key:component::lcn::services::var_reset::name%]",
+      "var_rel": "[%key:component::lcn::services::var_rel::name%]",
+      "lock_regulator": "[%key:component::lcn::services::lock_regulator::name%]",
+      "led": "[%key:component::lcn::services::led::name%]",
+      "send_keys": "[%key:component::lcn::services::send_keys::name%]",
+      "lock_keys": "[%key:component::lcn::services::lock_keys::name%]",
+      "dyn_text": "[%key:component::lcn::services::dyn_text::name%]",
+      "pck": "[%key:component::lcn::services::pck::name%]"
+    },
     "trigger_type": {
       "transmitter": "Transmitter code received",
       "transponder": "Transponder code received",
@@ -11,7 +22,22 @@
       "action": "Action",
       "code": "Code",
       "key": "Key",
-      "level": "Level"
+      "level": "Level",
+      "variable": "[%key:component::lcn::services::var_abs::fields::variable::name%]",
+      "value": "[%key:component::lcn::services::var_abs::fields::value::name%]",
+      "unit_of_measurement": "[%key:component::lcn::services::var_abs::fields::unit_of_measurement::name%]",
+      "value_reference": "[%key:component::lcn::services::var_rel::fields::value_reference::name%]",
+      "setpoint": "[%key:component::lcn::services::lock_regulator::fields::setpoint::name%]",
+      "lock_state": "[%key:component::lcn::services::lock_regulator::fields::lock_state::name%]",
+      "led": "[%key:component::lcn::services::led::fields::led::name%]",
+      "led_state": "[%key:component::lcn::services::led::fields::led_state::name%]",
+      "keys": "[%key:component::lcn::services::send_keys::fields::keys::name%]",
+      "key_state": "[%key:component::lcn::services::send_keys::fields::key_state::name%]",
+      "time": "[%key:component::lcn::services::send_keys::fields::time::name%]",
+      "time_unit": "[%key:component::lcn::services::send_keys::fields::time_unit::name%]",
+      "row": "[%key:component::lcn::services::dyn_text::fields::row::name%]",
+      "text": "[%key:component::lcn::services::dyn_text::fields::text::name%]",
+      "pck": "[%key:component::lcn::services::pck::fields::pck::name%]"
     }
   },
   "config": {
@@ -86,7 +112,7 @@
           "description": "The LCN device to set the LED state on."
         },
         "led": {
-          "name": "[%key:component::lcn::services::led::name%]",
+          "name": "LED",
           "description": "LED."
         },
         "led_state": {
@@ -254,7 +280,7 @@
           "description": "The LCN device to send a PCK command to."
         },
         "pck": {
-          "name": "[%key:component::lcn::services::pck::name%]",
+          "name": "PCK",
           "description": "PCK command (without address header)."
         }
       }
@@ -282,6 +308,37 @@
         "off": "Off",
         "toggle": "Toggle"
       }
+    },
+    "time_unit": {
+      "options": {
+        "seconds": "seconds",
+        "minutes": "minutes",
+        "hours": "hours",
+        "days": "days"
+      }
+    }
+  },
+  "exceptions": {
+    "only_hit_command_allowed": {
+      "message": "Only hit command is allowed when sending deferred keys."
+    },
+    "only_table_a_allowed": {
+      "message": "Only table A is allowed when locking keys for a specific time."
+    },
+    "only_lock_state_on_off_allowed": {
+      "message": "Only lock states 'on' and 'off' are allowed when locking keys for a specific time."
+    },
+    "wrong_time_seconds": {
+      "message": "Wrong time. Seconds must be between 1 and 60."
+    },
+    "wrong_time_minutes": {
+      "message": "Wrong time. Minutes must be between 1 and 90."
+    },
+    "wrong_time_hours": {
+      "message": "Wrong time. Hours must be between 1 and 50."
+    },
+    "wrong_time_days": {
+      "message": "Wrong time. Days must be between 1 and 45."
     }
   }
 }

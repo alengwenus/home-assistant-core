@@ -25,6 +25,7 @@ from homeassistant.components.lcn.const import (
 from homeassistant.components.lcn.services import LcnService
 from homeassistant.const import CONF_DEVICE_ID, CONF_UNIT_OF_MEASUREMENT
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.setup import async_setup_component
 
 from .conftest import (
@@ -213,7 +214,7 @@ async def test_service_send_keys_hit_deferred(
         patch.object(
             MockModuleConnection, "send_keys_hit_deferred"
         ) as send_keys_hit_deferred,
-        pytest.raises(ValueError),
+        pytest.raises(ServiceValidationError),
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -304,7 +305,7 @@ async def test_service_lock_keys_tab_a_temporary(
         patch.object(
             MockModuleConnection, "lock_keys_tab_a_temporary"
         ) as lock_keys_tab_a_temporary,
-        pytest.raises(ValueError),
+        pytest.raises(ServiceValidationError),
     ):
         await hass.services.async_call(
             DOMAIN,
@@ -313,6 +314,27 @@ async def test_service_lock_keys_tab_a_temporary(
                 CONF_DEVICE_ID: device.id,
                 CONF_KEYS: keys,
                 CONF_LOCK_STATE: "ON",
+                CONF_TIME: 10,
+                CONF_TIME_UNIT: "s",
+            },
+            blocking=True,
+        )
+
+    # wrong lock_state
+    keys = ["a1", "a4", "a7"]
+    with (
+        patch.object(
+            MockModuleConnection, "lock_keys_tab_a_temporary"
+        ) as lock_keys_tab_a_temporary,
+        pytest.raises(ServiceValidationError),
+    ):
+        await hass.services.async_call(
+            DOMAIN,
+            LcnService.LOCK_KEYS,
+            {
+                CONF_DEVICE_ID: device.id,
+                CONF_KEYS: keys,
+                CONF_LOCK_STATE: "TOGGLE",
                 CONF_TIME: 10,
                 CONF_TIME_UNIT: "s",
             },

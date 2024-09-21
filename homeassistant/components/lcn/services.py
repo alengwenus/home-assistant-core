@@ -8,6 +8,7 @@ import voluptuous as vol
 
 from homeassistant.const import CONF_DEVICE_ID, CONF_UNIT_OF_MEASUREMENT
 from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import device_registry as dr
 import homeassistant.helpers.config_validation as cv
 
@@ -186,8 +187,8 @@ class SendKeys(LcnServiceCall):
         vol.Required(CONF_KEY_STATE, default="hit"): vol.All(
             vol.Upper, vol.In(SENDKEYCOMMANDS)
         ),
-        vol.Optional(CONF_TIME, default=0): cv.positive_int,
-        vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(
+        vol.Optional(CONF_TIME, default=1): cv.positive_int,
+        vol.Optional(CONF_TIME_UNIT, default="seconds"): vol.All(
             vol.Upper, vol.In(TIME_UNITS)
         ),
     }
@@ -201,13 +202,22 @@ class SendKeys(LcnServiceCall):
         if (delay_time := service.data[CONF_TIME]) != 0:
             hit = pypck.lcn_defs.SendKeyCommand.HIT
             if pypck.lcn_defs.SendKeyCommand[service.data[CONF_KEY_STATE]] != hit:
-                raise ValueError(
-                    "Only hit command is allowed when sending deferred keys."
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="only_hit_command_allowed",
                 )
             delay_unit = pypck.lcn_defs.TimeUnit.parse(service.data[CONF_TIME_UNIT])
-            await device_connection.send_keys_hit_deferred(keys, delay_time, delay_unit)
+            try:
+                await device_connection.send_keys_hit_deferred(
+                    keys, delay_time, delay_unit
+                )
+            except ValueError as exception:
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key=f"wrong_time_{service.data[CONF_TIME_UNIT]}",
+                ) from exception
         else:
-            state = pypck.lcn_defs.SendKeyCommand[service.data[CONF_KEY_STATE]]
+            state = pypck.lcn_defs.SendKeyCommand[service.data[CONF_KEY_STATE].upper()]
             await device_connection.send_keys(keys, state)
 
 
@@ -219,8 +229,8 @@ class LockKeys(LcnServiceCall):
         vol.Required(CONF_LOCK_STATE): vol.All(
             vol.Upper, vol.In(KEYLOCKSTATEMODIFIERS)
         ),
-        vol.Optional(CONF_TIME, default=0): cv.positive_int,
-        vol.Optional(CONF_TIME_UNIT, default="S"): vol.All(
+        vol.Optional(CONF_TIME, default=1): cv.positive_int,
+        vol.Optional(CONF_TIME_UNIT, default="seconds"): vol.All(
             vol.Upper, vol.In(TIME_UNITS)
         ),
     }
@@ -235,8 +245,9 @@ class LockKeys(LcnServiceCall):
         if (delay_time := service.data[CONF_TIME]) != 0:
             table_ids, key_ids = zip(*[key.value for key in keys], strict=True)
             if any(table_ids):
-                raise ValueError(
-                    "Only table A is allowed when locking keys for a specific time."
+                raise ServiceValidationError(
+                    translation_domain=DOMAIN,
+                    translation_key="only_table_a_allowed",
                 )
             delay_unit = pypck.lcn_defs.TimeUnit.parse(service.data[CONF_TIME_UNIT])
             for key_id in key_ids:
@@ -244,8 +255,9 @@ class LockKeys(LcnServiceCall):
                     service.data[CONF_LOCK_STATE]
                 ]
                 if pypck.lcn_defs.KeyLockStateModifier.TOGGLE in states:
-                    raise ValueError(
-                        "Only lock states 'on' and 'off' are allowed when locking keys for a specific time."
+                    raise ServiceValidationError(
+                        translation_domain=DOMAIN,
+                        translation_key="only_lock_state_on_off_allowed",
                     )
             await device_connection.lock_keys_tab_a_temporary(
                 delay_time, delay_unit, states

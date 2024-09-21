@@ -318,16 +318,17 @@ send_keys:
     time:
       selector:
         number:
-          min: 0
-          max: 60
+          min: 1
+          max: 90
     time_unit:
       selector:
         select:
+          mode: "dropdown"
           options:
-            - "days"
-            - "hours"
-            - "minutes"
             - "seconds"
+            - "minutes"
+            - "hours"
+            - "days"
 
 lock_keys:
   fields:
