@@ -187,7 +187,7 @@ class SendKeys(LcnServiceCall):
         vol.Required(CONF_KEY_STATE, default="hit"): vol.All(
             vol.Upper, vol.In(SENDKEYCOMMANDS)
         ),
-        vol.Optional(CONF_TIME, default=1): cv.positive_int,
+        vol.Optional(CONF_TIME): cv.positive_int,
         vol.Optional(CONF_TIME_UNIT, default="seconds"): vol.All(
             vol.Upper, vol.In(TIME_UNITS)
         ),
@@ -199,7 +199,7 @@ class SendKeys(LcnServiceCall):
         device_connection = self.get_device_connection(service)
         keys = [pypck.lcn_defs.Key[key] for key in service.data[CONF_KEYS]]
 
-        if (delay_time := service.data[CONF_TIME]) != 0:
+        if (CONF_TIME in service.data) and (delay_time := service.data[CONF_TIME]) > 0:
             hit = pypck.lcn_defs.SendKeyCommand.HIT
             if pypck.lcn_defs.SendKeyCommand[service.data[CONF_KEY_STATE]] != hit:
                 raise ServiceValidationError(
@@ -229,7 +229,7 @@ class LockKeys(LcnServiceCall):
         vol.Required(CONF_LOCK_STATE): vol.All(
             vol.Upper, vol.In(KEYLOCKSTATEMODIFIERS)
         ),
-        vol.Optional(CONF_TIME, default=1): cv.positive_int,
+        vol.Optional(CONF_TIME): cv.positive_int,
         vol.Optional(CONF_TIME_UNIT, default="seconds"): vol.All(
             vol.Upper, vol.In(TIME_UNITS)
         ),
@@ -242,7 +242,7 @@ class LockKeys(LcnServiceCall):
         keys = [pypck.lcn_defs.Key[key] for key in service.data[CONF_KEYS]]
         states = [pypck.lcn_defs.KeyLockStateModifier.NOCHANGE] * 8
 
-        if (delay_time := service.data[CONF_TIME]) != 0:
+        if (CONF_TIME in service.data) and (delay_time := service.data[CONF_TIME]) > 0:
             table_ids, key_ids = zip(*[key.value for key in keys], strict=True)
             if any(table_ids):
                 raise ServiceValidationError(

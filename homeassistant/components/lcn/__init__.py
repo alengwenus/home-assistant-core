@@ -265,7 +265,7 @@ def _async_fire_send_keys_event(
             event_data = {
                 "segment_id": address[0],
                 "module_id": address[1],
-                "key": pypck.lcn_defs.Key(table * 8 + key).name.lower(),
+                "key": pypck.lcn_defs.Key((table, key)).name.lower(),
                 "action": action.name.lower(),
             }
 

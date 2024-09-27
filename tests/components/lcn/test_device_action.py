@@ -7,8 +7,8 @@ from homeassistant.components import automation
 from homeassistant.components.device_automation import DeviceAutomationType
 from homeassistant.components.lcn import DOMAIN
 from homeassistant.components.lcn.const import (
-    CONF_KEY,
     CONF_KEY_STATE,
+    CONF_KEYS,
     CONF_LED,
     CONF_LED_STATE,
     CONF_LOCK_STATE,
@@ -46,8 +46,8 @@ action_data = {
         CONF_UNIT_OF_MEASUREMENT: "percent",
     },
     LcnService.LOCK_REGULATOR: {CONF_SETPOINT: "r1varsetpoint", CONF_LOCK_STATE: True},
-    LcnService.SEND_KEY: {CONF_KEY: "a5", CONF_KEY_STATE: "hit"},
-    LcnService.LOCK_KEY: {CONF_KEY: "b4", CONF_LOCK_STATE: "on"},
+    LcnService.SEND_KEYS: {CONF_KEYS: ["a1", "a4", "b1", "c4"], CONF_KEY_STATE: "hit"},
+    LcnService.LOCK_KEYS: {CONF_KEYS: ["a1", "a4", "b1", "c4"], CONF_LOCK_STATE: "on"},
     LcnService.DYN_TEXT: {CONF_ROW: 1, CONF_TEXT: "Hello world!"},
     LcnService.PCK: {CONF_PCK: "PIN001"},
 }
@@ -81,7 +81,7 @@ async def test_get_actions(
 async def test_action(
     hass: HomeAssistant, entry: MockConfigEntry, action_type: str
 ) -> None:
-    """Test for turn_on and turn_off actions."""
+    """Test for trigger actions."""
     await init_integration(hass, entry)
     device_entry = get_device(hass, entry, (0, 7, False))
     assert await async_setup_component(
