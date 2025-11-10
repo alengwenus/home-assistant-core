@@ -58,6 +58,36 @@
       }
     }
   },
+  "config_subentries": {
+    "device": {
+      "entry_type": "LCN device",
+      "initiate_flow": {
+        "user": "Add LCN device"
+      },
+      "step": {
+        "add_device": {
+          "data": {
+            "id": "Module or group ID",
+            "is_group": "Group",
+            "segment_id": "Segment ID"
+          }
+        }
+      }
+    },
+    "scan_devices": {
+      "abort": {
+        "scan_completed": "The scan for LCN modules has been completed. Newly found modules have been added to the integration."
+      },
+      "entry_type": "LCN device",
+      "initiate_flow": {
+        "user": "Scan for LCN modules"
+      },
+      "progress": {
+        "scan_devices": "The LCN bus is being scanned for new modules. This may take a while, depending on the number of modules in your installation."
+      },
+      "step": {}
+    }
+  },
   "device_automation": {
     "extra_fields": {
       "action": "Action",

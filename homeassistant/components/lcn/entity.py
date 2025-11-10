@@ -43,7 +43,7 @@ class LcnEntity(Entity):
                     DOMAIN,
                     generate_unique_id(self.config_entry.entry_id, self.address),
                 )
-            },
+            }
         )
 
     @property

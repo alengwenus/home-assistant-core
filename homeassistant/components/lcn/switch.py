@@ -2,13 +2,13 @@
 
 from collections.abc import Iterable
 from datetime import timedelta
-from functools import partial
 from typing import Any
 
 import pypck
 
 from homeassistant.components.switch import DOMAIN as DOMAIN_SWITCH, SwitchEntity
-from homeassistant.const import CONF_DOMAIN, CONF_ENTITIES
+from homeassistant.config_entries import ConfigSubentry
+from homeassistant.const import CONF_ADDRESS, CONF_DOMAIN, CONF_ENTITIES
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.helpers.typing import ConfigType
@@ -23,6 +23,7 @@ SCAN_INTERVAL = timedelta(minutes=1)
 
 def add_lcn_switch_entities(
     config_entry: LcnConfigEntry,
+    config_subentry: ConfigSubentry,
     async_add_entities: AddConfigEntryEntitiesCallback,
     entity_configs: Iterable[ConfigType],
 ) -> None:
@@ -39,8 +40,7 @@ def add_lcn_switch_entities(
             entities.append(LcnRegulatorLockSwitch(entity_config, config_entry))
         else:  # in KEYS
             entities.append(LcnKeyLockSwitch(entity_config, config_entry))
-
-    async_add_entities(entities)
+    async_add_entities(entities, config_subentry_id=config_subentry.subentry_id)
 
 
 async def async_setup_entry(
@@ -49,23 +49,19 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up LCN switch entities from a config entry."""
-    add_entities = partial(
-        add_lcn_switch_entities,
-        config_entry,
-        async_add_entities,
-    )
-
-    config_entry.runtime_data.add_entities_callbacks.update(
-        {DOMAIN_SWITCH: add_entities}
-    )
-
-    add_entities(
-        (
-            entity_config
-            for entity_config in config_entry.data[CONF_ENTITIES]
+    for config_subentry in config_entry.subentries.values():
+        entity_configs = [
+            entity_config | {CONF_ADDRESS: config_subentry.data[CONF_ADDRESS]}
+            for entity_config in config_subentry.data.get(CONF_ENTITIES, [])
             if entity_config[CONF_DOMAIN] == DOMAIN_SWITCH
-        ),
-    )
+        ]
+
+        add_lcn_switch_entities(
+            config_entry,
+            config_subentry,
+            async_add_entities,
+            entity_configs,
+        )
 
 
 class LcnOutputSwitch(LcnEntity, SwitchEntity):
@@ -119,7 +115,11 @@ class LcnRelaySwitch(LcnEntity, SwitchEntity):
 
     _attr_is_on = False
 
-    def __init__(self, config: ConfigType, config_entry: LcnConfigEntry) -> None:
+    def __init__(
+        self,
+        config: ConfigType,
+        config_entry: LcnConfigEntry,
+    ) -> None:
         """Initialize the LCN switch."""
         super().__init__(config, config_entry)
 

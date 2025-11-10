@@ -55,10 +55,8 @@ from .helpers import (
     generate_unique_id,
     purge_device_registry,
     register_lcn_address_devices,
-    register_lcn_host_device,
 )
 from .services import async_setup_services
-from .websocket import register_panel_and_ws_api
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,8 +66,6 @@ CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     """Set up the LCN component."""
     async_setup_services(hass)
-    await register_panel_and_ws_api(hass)
-
     return True
 
 
@@ -121,15 +117,17 @@ async def async_setup_entry(hass: HomeAssistant, config_entry: LcnConfigEntry) -
     # Update config_entry with LCN device serials
     await async_update_config_entry(hass, config_entry)
 
-    # register/update devices for host, modules and groups in device registry
-    register_lcn_host_device(hass, config_entry)
+    # register/update devices for modules and groups in device registry
     register_lcn_address_devices(hass, config_entry)
 
     # clean up orphaned devices
-    purge_device_registry(hass, config_entry.entry_id, {**config_entry.data})
+    purge_device_registry(hass, config_entry)
 
     # forward config_entry to components
     await hass.config_entries.async_forward_entry_setups(config_entry, PLATFORMS)
+
+    # Reload entry on configuration change (e.g., when adding a new config_subentry)
+    config_entry.add_update_listener(_async_reload_config_entry)
 
     # register for LCN bus messages
     device_registry = dr.async_get(hass)
@@ -217,6 +215,13 @@ async def async_migrate_entities(
     await er.async_migrate_entries(hass, config_entry.entry_id, update_unique_id)
 
 
+async def _async_reload_config_entry(
+    hass: HomeAssistant, entry: LcnConfigEntry
+) -> None:
+    """Reload config entry."""
+    hass.config_entries.async_schedule_reload(entry.entry_id)
+
+
 async def async_unload_entry(hass: HomeAssistant, config_entry: LcnConfigEntry) -> bool:
     """Close connection to PCHK host represented by config_entry."""
     # forward unloading to platforms
@@ -234,25 +239,18 @@ def async_host_event_received(
     hass: HomeAssistant, config_entry: LcnConfigEntry, event: pypck.lcn_defs.LcnEvent
 ) -> None:
     """Process received event from LCN."""
-    lcn_connection = config_entry.runtime_data.connection
-
-    async def reload_config_entry() -> None:
-        """Close connection and schedule config entry for reload."""
-        await lcn_connection.async_close()
-        hass.config_entries.async_schedule_reload(config_entry.entry_id)
-
     if event in (
         LcnEvent.CONNECTION_LOST,
         LcnEvent.PING_TIMEOUT,
     ):
         _LOGGER.info('The connection to host "%s" has been lost', config_entry.title)
-        hass.async_create_task(reload_config_entry())
+        hass.async_create_task(_async_reload_config_entry(hass, config_entry))
     elif event == LcnEvent.BUS_DISCONNECTED:
         _LOGGER.info(
             'The connection to the LCN bus via host "%s" has been disconnected',
             config_entry.title,
         )
-        hass.async_create_task(reload_config_entry())
+        hass.async_create_task(_async_reload_config_entry(hass, config_entry))
 
 
 def async_host_input_received(

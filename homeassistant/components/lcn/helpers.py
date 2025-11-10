@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Callable, Iterable
-from copy import deepcopy
 from dataclasses import dataclass
 import re
 from typing import cast
@@ -153,22 +151,16 @@ def purge_entity_registry(
         entity_registry.async_remove(orphaned_id)
 
 
-def purge_device_registry(
-    hass: HomeAssistant, entry_id: str, imported_entry_data: ConfigType
-) -> None:
+def purge_device_registry(hass: HomeAssistant, config_entry: LcnConfigEntry) -> None:
     """Remove orphans from device registry which are not in entry data."""
     device_registry = dr.async_get(hass)
 
-    # Find device that references the host.
-    references_host = set()
-    host_device = device_registry.async_get_device(identifiers={(DOMAIN, entry_id)})
-    if host_device is not None:
-        references_host.add(host_device.id)
-
     # Find all devices that are referenced by the entry_data.
     references_entry_data = set()
-    for device_data in imported_entry_data[CONF_DEVICES]:
-        device_unique_id = generate_unique_id(entry_id, device_data[CONF_ADDRESS])
+    for config_subentry in config_entry.subentries.values():
+        device_unique_id = generate_unique_id(
+            config_entry.entry_id, config_subentry.data[CONF_ADDRESS]
+        )
         device = device_registry.async_get_device(
             identifiers={(DOMAIN, device_unique_id)}
         )
@@ -178,27 +170,16 @@ def purge_device_registry(
     orphaned_ids = (
         {
             entry.id
-            for entry in dr.async_entries_for_config_entry(device_registry, entry_id)
+            for entry in dr.async_entries_for_config_entry(
+                device_registry, config_entry.entry_id
+            )
         }
-        - references_host
+        # - references_host
         - references_entry_data
     )
 
     for device_id in orphaned_ids:
         device_registry.async_remove_device(device_id)
-
-
-def register_lcn_host_device(hass: HomeAssistant, config_entry: LcnConfigEntry) -> None:
-    """Register LCN host for given config_entry in device registry."""
-    device_registry = dr.async_get(hass)
-
-    device_registry.async_get_or_create(
-        config_entry_id=config_entry.entry_id,
-        identifiers={(DOMAIN, config_entry.entry_id)},
-        manufacturer="Issendorff",
-        name=config_entry.title,
-        model="LCN-PCHK",
-    )
 
 
 def register_lcn_address_devices(
@@ -211,13 +192,18 @@ def register_lcn_address_devices(
     """
     device_registry = dr.async_get(hass)
 
-    host_identifiers = (DOMAIN, config_entry.entry_id)
+    # for device_config in config_entry.data[CONF_DEVICES]:
+    for config_subentry in config_entry.subentries.values():
+        device_config = config_subentry.data
 
-    for device_config in config_entry.data[CONF_DEVICES]:
         address = device_config[CONF_ADDRESS]
         device_name = device_config[CONF_NAME]
-        identifiers = {(DOMAIN, generate_unique_id(config_entry.entry_id, address))}
-
+        identifiers = {
+            (
+                DOMAIN,
+                generate_unique_id(config_entry.entry_id, address),
+            )
+        }
         if device_config[CONF_ADDRESS][2]:  # is group
             device_model = "LCN group"
             sw_version = None
@@ -232,8 +218,8 @@ def register_lcn_address_devices(
 
         device_entry = device_registry.async_get_or_create(
             config_entry_id=config_entry.entry_id,
+            config_subentry_id=config_subentry.subentry_id,
             identifiers=identifiers,
-            via_device=host_identifiers,
             manufacturer="Issendorff",
             sw_version=sw_version,
             name=device_name,
@@ -286,20 +272,21 @@ async def async_update_config_entry(
     hass: HomeAssistant, config_entry: LcnConfigEntry
 ) -> None:
     """Fill missing values in config_entry with infos from LCN bus."""
-    device_configs = deepcopy(config_entry.data[CONF_DEVICES])
-    coros = []
-    for device_config in device_configs:
+    # device_configs = deepcopy(config_entry.data[CONF_DEVICES])
+
+    # for device_config in device_configs:
+    for config_subentry in config_entry.subentries.values():
+        device_config = {**config_subentry.data}
         device_connection = get_device_connection(
             hass, device_config[CONF_ADDRESS], config_entry
         )
-        coros.append(async_update_device_config(device_connection, device_config))
+        await async_update_device_config(device_connection, device_config)
 
-    await asyncio.gather(*coros)
-
-    new_data = {**config_entry.data, CONF_DEVICES: device_configs}
-
-    # schedule config_entry for save
-    hass.config_entries.async_update_entry(config_entry, data=new_data)
+        new_data = config_subentry.data | device_config
+        # schedule config_entry for save
+        hass.config_entries.async_update_subentry(
+            config_entry, config_subentry, data=new_data
+        )
 
 
 def get_device_config(
