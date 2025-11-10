@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 import asyncio
+from copy import deepcopy
 import logging
 from types import MappingProxyType
 from typing import Any
 
 import pypck
+from pypck import lcn_defs
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -26,6 +28,12 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers import config_validation as cv
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+    SelectSelectorMode,
+)
 from homeassistant.helpers.typing import ConfigType
 
 from . import PchkConnectionManager
@@ -207,9 +215,10 @@ class LcnFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
 class LcnDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
     """Handle LCN subentry flow."""
 
-    _subentry_data: dict[str, Any] | None = None
     add_device_task: asyncio.Task
-    lcn_connection: pypck.connection.PchkConnectionManager | None = None
+    lcn_connection: pypck.connection.PchkConnectionManager
+    _subentry_data: dict[str, Any]
+    _entity_data: dict[str, Any]
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -224,6 +233,7 @@ class LcnDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
         """Add a new LCN device."""
         errors: dict[str, Any] = {}
         data_schema = DEVICE_SCHEMA
+        config_entry = self._get_entry()
 
         if user_input is None:
             return self.async_show_form(
@@ -233,16 +243,24 @@ class LcnDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
                 last_step=True,
             )
 
-        self.add_device_task = self.hass.async_create_task(
-            async_get_device_config(
-                self.hass,
-                self._get_entry(),
-                (
-                    user_input["segment_id"],
-                    user_input["id"],
-                    user_input["is_group"],
+        address = (
+            user_input["segment_id"],
+            user_input["id"],
+            user_input["is_group"],
+        )
+
+        if check_already_configured(address, config_entry):
+            return self.async_show_form(
+                step_id="add_device",
+                data_schema=self.add_suggested_values_to_schema(
+                    data_schema, user_input
                 ),
+                errors={CONF_BASE: "device_exists"},
+                last_step=True,
             )
+
+        self.add_device_task = self.hass.async_create_task(
+            async_get_device_config(self.hass, config_entry, address)
         )
 
         return await self.async_step_add_device_progress()
@@ -268,17 +286,17 @@ class LcnDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
     ) -> config_entries.SubentryFlowResult:
         """Add device completed."""
         device_config = self.add_device_task.result()
-        device_config |= {
-            CONF_ENTITIES: [
-                {
-                    "name": "Switch_Relay1",
-                    "domain": "switch",
-                    "domain_data": {
-                        "output": "RELAY1",
-                    },
-                },
-            ],
-        }
+        # device_config |= {
+        #     CONF_ENTITIES: [
+        #         {
+        #             "name": "Switch_Relay1",
+        #             "domain": "switch",
+        #             "domain_data": {
+        #                 "output": "RELAY1",
+        #             },
+        #         },
+        #     ],
+        # }
         return self.async_create_entry(
             title=device_config[CONF_NAME], data=device_config
         )
@@ -287,26 +305,133 @@ class LcnDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.SubentryFlowResult:
         """Reconfigure a subentry."""
+        reconfigure_subentry = self._get_reconfigure_subentry()
+        self._subentry_data = deepcopy(dict(reconfigure_subentry.data))
         return await self.async_step_summary_menu()
 
     async def async_step_summary_menu(
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.SubentryFlowResult:
         """Show summary menu and decide to add more entities or to finish the flow."""
-        menu_options = ["entity", "update_entity", "save_changes"]
+        menu_options = ["add_entity", "delete_entity", "save_changes"]
         return self.async_show_menu(
             step_id="summary_menu",
             menu_options=menu_options,
-            # description_placeholders={
-            #     "lcn_device": lcn_device,
-            # },
+            description_placeholders={
+                "lcn_device": self._subentry_data[CONF_NAME],
+            },
+        )
+
+    async def async_step_add_entity(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.SubentryFlowResult:
+        """Show entity platform menu."""
+        self._entity_data = {"domain": "", "domain_data": {}}
+        menu_options = [
+            "add_binary_sensor",
+            "add_climate",
+            "add_cover",
+            "add_light",
+            "add_scene",
+            "add_sensor",
+            "add_switch",
+        ]
+        return self.async_show_menu(
+            step_id="add_entity",
+            menu_options=menu_options,
+            description_placeholders={
+                "lcn_device": self._subentry_data[CONF_NAME],
+            },
+        )
+
+    async def async_step_add_switch(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.SubentryFlowResult:
+        """Add a switch entity."""
+        if user_input is not None:
+            self._entity_data["domain"] = "switch"
+            self._entity_data["target_type"] = user_input["target_type"]
+            return await self.async_step_add_switch_target()
+
+        options = [
+            SelectOptionDict(value="output", label="Output"),
+            SelectOptionDict(value="relay", label="Relay"),
+            SelectOptionDict(value="regulator", label="Regulator lock"),
+            SelectOptionDict(value="key", label="Key lock"),
+        ]
+        data_schema = vol.Schema(
+            {
+                vol.Required("target_type"): SelectSelector(
+                    SelectSelectorConfig(
+                        options=options,
+                        mode=SelectSelectorMode.LIST,
+                        translation_key="target_type",
+                    )
+                )
+            }
+        )
+
+        return self.async_show_form(
+            step_id="add_switch",
+            data_schema=data_schema,
+            description_placeholders={
+                "lcn_device": self._subentry_data[CONF_NAME],
+            },
+            last_step=False,
+        )
+
+    async def async_step_add_switch_target(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.SubentryFlowResult:
+        """Configure switch target."""
+        target_type = self._entity_data["target_type"]
+        match target_type:
+            case "output":
+                options = [
+                    SelectOptionDict(value=output.name.lower(), label=output.name)
+                    for output in lcn_defs.OutputPort
+                ]
+            case "relay":
+                options = [
+                    SelectOptionDict(value=relay.name.lower(), label=relay.name)
+                    for relay in lcn_defs.RelayPort
+                ]
+            case "regulator":
+                options = [
+                    SelectOptionDict(value=set_point.name.lower(), label=set_point.name)
+                    for set_point in lcn_defs.Var.set_points()
+                ]
+            case "key":
+                options = [
+                    SelectOptionDict(value=key.name, label=key.name)
+                    for key in lcn_defs.Key
+                ]
+
+        data_schema = vol.Schema(
+            {
+                vol.Required("target"): SelectSelector(
+                    SelectSelectorConfig(
+                        options=options,
+                        mode=SelectSelectorMode.DROPDOWN,
+                        translation_key=target_type,
+                    )
+                )
+            }
+        )
+        return self.async_show_form(
+            step_id="add_switch_target",
+            data_schema=data_schema,
+            description_placeholders={
+                "lcn_device": self._subentry_data[CONF_NAME],
+            },
+            last_step=True,
         )
 
 
 class LcnScanDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
     """Handle LCN subentry flow."""
 
-    _subentry_data: dict[str, Any] | None = None
+    _subentry_data: dict[str, Any]
     scan_devices_task: asyncio.Task
     lcn_connection: pypck.connection.PchkConnectionManager
 
@@ -339,13 +464,9 @@ class LcnScanDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
         user_input: dict[str, Any] | None = None,
     ) -> config_entries.SubentryFlowResult:
         """Scan completed."""
-        existing_addresses = [
-            tuple(subentry.data[CONF_ADDRESS])
-            for subentry in self._get_entry().subentries.values()
-        ]
-
         # Add new devices as subentries
-        for device_connection in self.lcn_connection.address_conns.values():
+        config_entry = self._get_entry()
+        for device_connection in self.lcn_connection.device_connections.values():
             if device_connection.is_group:
                 continue
 
@@ -355,12 +476,11 @@ class LcnScanDeviceSubentryFlowHandler(config_entries.ConfigSubentryFlow):
                 False,
             )
 
-            if address in existing_addresses:
-                _LOGGER.debug("Device %s already exists in config entry", address)
+            if check_already_configured(address, config_entry):
                 continue
 
             device_config = await async_get_device_config(
-                self.hass, self._get_entry(), address
+                self.hass, config_entry, address
             )
             subentry = config_entries.ConfigSubentry(
                 data=MappingProxyType(device_config),
@@ -392,3 +512,14 @@ async def async_get_device_config(
     # update device info from LCN
     await async_update_device_config(device_connection, device_config)
     return device_config
+
+
+def check_already_configured(
+    address: AddressType, config_entry: LcnConfigEntry
+) -> bool:
+    """Check if device is already configured in the config entry."""
+    for subentry in config_entry.subentries.values():
+        if tuple(subentry.data[CONF_ADDRESS]) == address:
+            _LOGGER.debug("Device %s already exists in config entry", address)
+            return True
+    return False

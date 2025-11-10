@@ -61,7 +61,11 @@
   "config_subentries": {
     "device": {
       "entry_type": "LCN device",
+      "error": {
+        "device_exists": "LCN device with given address is already configured."
+      },
       "initiate_flow": {
+        "reconfigure": "Reconfigure LCN device",
         "user": "Add LCN device"
       },
       "step": {
@@ -71,6 +75,42 @@
             "is_group": "Group",
             "segment_id": "Segment ID"
           }
+        },
+        "add_entity": {
+          "description": "Select the platform for the entity to add.",
+          "menu_options": {
+            "add_binary_sensor": "Binary sensor",
+            "add_climate": "Climate",
+            "add_cover": "Cover",
+            "add_light": "Light",
+            "add_scene": "Scene",
+            "add_sensor": "Sensor",
+            "add_switch": "Switch"
+          },
+          "title": "Add entity to \"{lcn_device}\""
+        },
+        "add_switch": {
+          "data": {
+            "target_type": "Target type"
+          },
+          "description": "Select target type",
+          "title": "Add switch to \"{lcn_device}\""
+        },
+        "add_switch_target": {
+          "data": {
+            "target": "Target"
+          },
+          "description": "Select target for switch",
+          "title": "Add switch to \"{lcn_device}\""
+        },
+        "summary_menu": {
+          "description": "Select an action to perform for the LCN device.",
+          "menu_options": {
+            "add_entity": "Add new entity to \"{lcn_device}\"",
+            "delete_entity": "Delete an entity",
+            "save_changes": "Save changes"
+          },
+          "title": "Reconfigure \"{lcn_device}\""
         }
       }
     },
@@ -121,6 +161,42 @@
     },
     "invalid_send_keys_action": {
       "message": "Invalid state for sending keys. Only 'hit' allowed for deferred sending."
+    }
+  },
+  "selector": {
+    "output": {
+      "options": {
+        "output1": "Output 1",
+        "output2": "Output 2",
+        "output3": "Output 3",
+        "output4": "Output 4"
+      }
+    },
+    "output_type": {
+      "options": {
+        "key": "Key lock",
+        "output": "Output",
+        "regulator": "Regulator lock",
+        "relay": "Relay"
+      }
+    },
+    "regulator": {
+      "options": {
+        "r1varsetpoint": "Regulator 1",
+        "r2varsetpoint": "Regulator 2"
+      }
+    },
+    "relay": {
+      "options": {
+        "relay1": "Relay 1",
+        "relay2": "Relay 2",
+        "relay3": "Relay 3",
+        "relay4": "Relay 4",
+        "relay5": "Relay 5",
+        "relay6": "Relay 6",
+        "relay7": "Relay 7",
+        "relay8": "Relay 8"
+      }
     }
   },
   "services": {
