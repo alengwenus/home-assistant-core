@@ -73,17 +73,14 @@ class LcnBinarySensor(LcnEntity, BinarySensorEntity):
 
     async def async_update(self) -> None:
         """Update the state of the entity."""
-        self._attr_available = (
-            await self.device_connection.request_status_binary_sensors(
-                SCAN_INTERVAL.seconds
-            )
-            is not None
+        await self.device_connection.request_status_binary_sensors(
+            SCAN_INTERVAL.seconds
         )
 
     def input_received(self, input_obj: InputType) -> None:
         """Set sensor value when LCN input object (command) is received."""
         if not isinstance(input_obj, pypck.inputs.ModStatusBinSensors):
             return
-        self._attr_available = True
+
         self._attr_is_on = input_obj.get_state(self.bin_sensor_port.value)
         self.async_write_ha_state()

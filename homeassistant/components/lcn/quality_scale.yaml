@@ -25,7 +25,7 @@ rules:
     status: exempt
     comment: Integration has no configuration parameters
   docs-installation-parameters: done
-  entity-unavailable: done
+  entity-unavailable: todo
   integration-owner: done
   log-when-unavailable: done
   parallel-updates: done
