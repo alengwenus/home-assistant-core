@@ -3,7 +3,6 @@
 from enum import StrEnum, auto
 
 import pypck
-from pypck.device import DeviceConnection
 import voluptuous as vol
 
 from homeassistant.const import (
@@ -49,7 +48,7 @@ from .const import (
     VAR_UNITS,
     VARIABLES,
 )
-from .helpers import LcnConfigEntry, is_states_string
+from .helpers import DeviceConnectionType, LcnConfigEntry, is_states_string
 
 
 class LcnServiceCall:
@@ -66,7 +65,7 @@ class LcnServiceCall:
         """Initialize service call."""
         self.hass = hass
 
-    def get_device_connection(self, service: ServiceCall) -> DeviceConnection:
+    def get_device_connection(self, service: ServiceCall) -> DeviceConnectionType:
         """Get address connection object."""
         entries: list[LcnConfigEntry] = self.hass.config_entries.async_loaded_entries(
             DOMAIN
