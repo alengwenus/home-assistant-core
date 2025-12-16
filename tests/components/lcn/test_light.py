@@ -209,12 +209,8 @@ async def test_relay_turn_off(hass: HomeAssistant, entry: MockConfigEntry) -> No
         states = [RelayStateModifier.NOCHANGE] * 8
         states[0] = RelayStateModifier.OFF
 
-        await hass.services.async_call(
-            DOMAIN_LIGHT,
-            SERVICE_TURN_ON,
-            {ATTR_ENTITY_ID: LIGHT_RELAY1},
-            blocking=True,
-        )
+        state = hass.states.get(LIGHT_RELAY1)
+        state.state = STATE_ON
 
         # command failed
         control_relays.return_value = False

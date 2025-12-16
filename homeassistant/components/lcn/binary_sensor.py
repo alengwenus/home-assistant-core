@@ -1,7 +1,6 @@
 """Support for LCN binary sensors."""
 
 from collections.abc import Iterable
-from datetime import timedelta
 from functools import partial
 
 import pypck
@@ -20,7 +19,6 @@ from .entity import LcnEntity
 from .helpers import InputType, LcnConfigEntry
 
 PARALLEL_UPDATES = 0
-SCAN_INTERVAL = timedelta(minutes=1)
 
 
 def add_lcn_entities(
@@ -71,11 +69,21 @@ class LcnBinarySensor(LcnEntity, BinarySensorEntity):
             config[CONF_DOMAIN_DATA][CONF_SOURCE]
         ]
 
-    async def async_update(self) -> None:
-        """Update the state of the entity."""
-        await self.device_connection.request_status_binary_sensors(
-            SCAN_INTERVAL.seconds
-        )
+    async def async_added_to_hass(self) -> None:
+        """Run when entity about to be added to hass."""
+        await super().async_added_to_hass()
+        if not self.device_connection.is_group:
+            await self.device_connection.activate_status_request_handler(
+                self.bin_sensor_port
+            )
+
+    async def async_will_remove_from_hass(self) -> None:
+        """Run when entity will be removed from hass."""
+        await super().async_will_remove_from_hass()
+        if not self.device_connection.is_group:
+            await self.device_connection.cancel_status_request_handler(
+                self.bin_sensor_port
+            )
 
     def input_received(self, input_obj: InputType) -> None:
         """Set sensor value when LCN input object (command) is received."""
