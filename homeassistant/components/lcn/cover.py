@@ -1,5 +1,6 @@
 """Support for LCN covers."""
 
+import asyncio
 from collections.abc import Coroutine, Iterable
 from datetime import timedelta
 from functools import partial
@@ -133,14 +134,14 @@ class LcnOutputsCover(LcnEntity, CoverEntity):
         """Update the state of the entity."""
         if not self.device_connection.is_group:
             self._attr_available = any(
-                [
-                    await self.device_connection.request_status_output(
+                await asyncio.gather(
+                    self.device_connection.request_status_output(
                         pypck.lcn_defs.OutputPort["OUTPUTUP"], SCAN_INTERVAL.seconds
                     ),
-                    await self.device_connection.request_status_output(
+                    self.device_connection.request_status_output(
                         pypck.lcn_defs.OutputPort["OUTPUTDOWN"], SCAN_INTERVAL.seconds
                     ),
-                ]
+                )
             )
 
     def input_received(self, input_obj: InputType) -> None:
@@ -273,7 +274,7 @@ class LcnRelayCover(LcnEntity, CoverEntity):
                     self.motor, self.positioning_mode, SCAN_INTERVAL.seconds
                 )
             )
-        self._attr_available = any([await coro for coro in coros])
+        self._attr_available = any(await asyncio.gather(*coros))
 
     def input_received(self, input_obj: InputType) -> None:
         """Set cover states when LCN input object (command) is received."""

@@ -1,5 +1,6 @@
 """Support for LCN climate control."""
 
+import asyncio
 from collections.abc import Iterable
 from datetime import timedelta
 from functools import partial
@@ -171,14 +172,14 @@ class LcnClimate(LcnEntity, ClimateEntity):
     async def async_update(self) -> None:
         """Update the state of the entity."""
         self._attr_available = any(
-            [
-                await self.device_connection.request_status_variable(
+            await asyncio.gather(
+                self.device_connection.request_status_variable(
                     self.variable, SCAN_INTERVAL.seconds
                 ),
-                await self.device_connection.request_status_variable(
+                self.device_connection.request_status_variable(
                     self.setpoint, SCAN_INTERVAL.seconds
                 ),
-            ]
+            )
         )
 
     def input_received(self, input_obj: InputType) -> None:
