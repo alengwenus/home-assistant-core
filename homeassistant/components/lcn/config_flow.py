@@ -120,7 +120,7 @@ class LcnFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                 errors={CONF_BASE: error},
             )
 
-        data: dict[str, Any] = {
+        data: dict = {
             **user_input,
             CONF_DEVICES: [],
             CONF_ENTITIES: [],

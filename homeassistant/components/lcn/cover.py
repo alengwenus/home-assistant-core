@@ -1,7 +1,7 @@
 """Support for LCN covers."""
 
 import asyncio
-from collections.abc import Coroutine, Iterable
+from collections.abc import Iterable
 from datetime import timedelta
 from functools import partial
 from typing import Any
@@ -80,8 +80,6 @@ class LcnOutputsCover(LcnEntity, CoverEntity):
     _attr_is_closing = False
     _attr_is_opening = False
     _attr_assumed_state = True
-
-    reverse_time: pypck.lcn_defs.MotorReverseTime | None
 
     def __init__(self, config: ConfigType, config_entry: LcnConfigEntry) -> None:
         """Initialize the LCN cover."""
@@ -257,15 +255,7 @@ class LcnRelayCover(LcnEntity, CoverEntity):
 
     async def async_update(self) -> None:
         """Update the state of the entity."""
-        coros: list[
-            Coroutine[
-                Any,
-                Any,
-                pypck.inputs.ModStatusRelays
-                | pypck.inputs.ModStatusMotorPositionBS4
-                | None,
-            ]
-        ] = [self.device_connection.request_status_relays(SCAN_INTERVAL.seconds)]
+        coros = [self.device_connection.request_status_relays(SCAN_INTERVAL.seconds)]
         if self.positioning_mode == pypck.lcn_defs.MotorPositioningMode.BS4:
             coros.append(
                 self.device_connection.request_status_motor_position(
@@ -293,7 +283,7 @@ class LcnRelayCover(LcnEntity, CoverEntity):
             )
             and input_obj.motor == self.motor.value
         ):
-            self._attr_current_cover_position = int(input_obj.position)
+            self._attr_current_cover_position = input_obj.position
             if self._attr_current_cover_position in [0, 100]:
                 self._attr_is_opening = False
                 self._attr_is_closing = False
